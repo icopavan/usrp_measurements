@@ -46,7 +46,7 @@ classdef SMBV < handle
         
         function value = query(obj, varargin)
             obj.sendCommand(varargin{:});
-            value = str2double(fgetl(obj.comm));
+            value = fgetl(obj.comm);
         end
         
         function value = queryDouble(obj, varargin)
