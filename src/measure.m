@@ -1,5 +1,6 @@
-function y = measure( smbv, gain, freqs, N_samples, N_meas, offset)
-    y = zeros(N_meas, length(freqs));
+function [ps, ys] = measure( smbv, gain, freqs, N_samples, N_meas, offset)
+    ps = zeros(N_meas, length(freqs));
+    ys = zeros(N_meas, length(freqs));
     for i = 1:length(freqs)
         f = freqs(i);
         off = offset;
@@ -19,9 +20,11 @@ function y = measure( smbv, gain, freqs, N_samples, N_meas, offset)
                     disp('Overflow!');
                 end
             end
-            db = pow2db(bandpower(v, 50e6, [off-0.5e6, off+0.5e6]));
-            y(j,i) = db;
-            fprintf(1, '%d. %g (%g): %gdB\n', j, f, o, db);
+            p = pow2db(bandpower(v, 50e6, [off-0.5e6, off+0.5e6]));
+            ps(j,i) = p;
+            y = sqrt(mean(abs((v-mean(v)).^2)));
+            ys(j,i) = y;
+            fprintf(1, '%d. %g (%g): %gdB %gfsc\n', j, f, o, p, y);
         end
     end
 end
