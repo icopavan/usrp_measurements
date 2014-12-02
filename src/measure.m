@@ -4,9 +4,9 @@ function y = measure( smbv, gain, freqs, N_samples, N_meas, offset)
         f = freqs(i);
         off = offset;
         o = f + off;
-        if o > 4.4e9
-            off = - offset;
-            o = f - off;
+        if (o > 4.4e9)
+            off = -offset;
+            o = f + off;
         end
         smbv.freq = o;
         for j = 1:N_meas
