@@ -12,7 +12,9 @@ function y = measure( smbv, gain, freqs, N_samples, N_meas, offset)
         for j = 1:N_meas
             status = 1;
             while (status ~= 0)
+                smbv.rf = 1;
                 [v, status] = usrp_rx(f, gain, 0, N_samples);
+                smbv.rf = 0;
                 if (status ~= 0)
                     disp('Overflow!');
                 end
