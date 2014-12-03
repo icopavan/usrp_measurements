@@ -1,5 +1,8 @@
-N_samples = 50000000;
+samp_rate = 25e6;
+N_samples = 50e6;
+wire = 16;
 N_meas = 10;
+savefile = sprintf('rxmeasure_%d_%dM.mat', wire, samp_rate/1e6);
 %-14dbm
 freqs = 400e6:50e6:4.4e9;
 gains = 0:5:50;
@@ -18,11 +21,13 @@ for i = 1:length(gains)
     fprintf(1, 'gain %d\n', gain); 
     fprintf(1, '=====================\n');
     tic
-        [p, y] = measure(smbv, gain, freqs, N_samples, N_meas, 1e6);
+        [p, y] = measure(smbv, gain, freqs, N_samples, N_meas, 1e6, samp_rate, wire);
     toc
     ps(i,:,:) = p;
     ys(i,:,:) = y;
+    save(savefile, 'ps', 'ys');
 end
 
-%errorbar(freqs, mean(y), std(y))
+plotrx;
+
 delete(smbv);
