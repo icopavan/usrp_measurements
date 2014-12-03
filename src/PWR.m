@@ -19,8 +19,6 @@ classdef PWR < handle
                 fprintf(obj.comm, '*OPC?');
                 fgetl(obj.comm);
             end
-%            fprintf(obj.comm, 'INIT:CONT OFF\n');
-%            fprintf(obj.comm, 'TRIG:SOURCE \n');
         end
         
         function delete(obj)
