@@ -1,4 +1,4 @@
-function [ps, ys] = measure( smbv, gain, freqs, N_samples, N_meas, offset, samp_rate, wire)
+function [ps, ys] = rxmeasure( smbv, gain, freqs, N_samples, N_meas, offset, samp_rate, wire)
     ps = zeros(N_meas, length(freqs));
     ys = zeros(N_meas, length(freqs));
     for i = 1:length(freqs)
