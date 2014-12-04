@@ -21,13 +21,13 @@ for i = 1:length(gains)
     fprintf(1, 'gain %d\n', gain); 
     fprintf(1, '=====================\n');
     tic
-        [p, y] = measure(smbv, gain, freqs, N_samples, N_meas, 1e6, samp_rate, wire);
+        [p, y] = rxmeasure(smbv, gain, freqs, N_samples, N_meas, 1e6, samp_rate, wire);
     toc
     ps(i,:,:) = p;
     ys(i,:,:) = y;
     save(savefile, 'ps', 'ys');
 end
 
-plotrx;
+%plotrx;
 
 delete(smbv);
