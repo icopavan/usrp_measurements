@@ -30,7 +30,7 @@ class rx(gr.top_block):
         # Blocks
         ##################################################
         self.uhd_usrp_source_0 = uhd.usrp_source(
-        	device_addr="",
+        	device_addr="addr=192.168.10.2",
         	stream_args=uhd.stream_args(
         		cpu_format="sc16",
         		otw_format=otw_format,
