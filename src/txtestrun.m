@@ -1,31 +1,36 @@
 N_sample = 50e6;
-N_out = 10*50e6;
+N_meas = 10;
+wire = 8;
+rffreqs = 400e6:50e6:4.4e9;
+ampl = 0.8;
+gains = 0:5:30;
+gains(end+1) = 31.5;
 
-freqs = [-6e6 -3e6 0 3e6 6e6];
-amp =   [1 1/2 1/4 1/8 1/16];
+mkdir(datestr(date));
+savefile = strcat(datestr(date), sprintf('/tx_%d_%d_%1.1f.mat', N_sample/1e6, wire, ampl));
 
-l = gcd(N_sample, min(abs(nonzeros(freqs))));
-t = 0:1:l-1;
+pwr = PWR('128.131.85.239');
+v = ones(1, 5000)*ampl;
 
-v = zeros(1,l);
-for i = 1:length(freqs)
-    v = v + amp(i)*exp(2i*pi*freqs(i)*t/N_sample);
+pows = zeros(length(gains), N_meas, length(rffreqs));
+
+for i = 1:length(gains)
+    fprintf(1, '---------------------\n');
+    fprintf(1, 'gain %d\n', gains(i)); 
+    fprintf(1, '=====================\n');
+    for j = 1:length(rffreqs)
+        tic
+            for k = 1:N_meas
+                status = 1;
+                while status ~= 0
+                    [pow, status] = txmeasure(pwr, rffreqs(j), gains(i), v, N_sample, wire);
+                end
+                pows(i, k, j) = pow;
+                fprintf(1, '%d. %g: %gdB\n', k, rffreqs(j), pow);
+            end
+        toc
+        save(savefile, 'pows');
+    end
 end
 
-v = v/(max(max(real(v)), max(imag(v))))*127*0.6;
-
-
-process = usrp_tx(2.4e9, 20, v, 0, 50e6, 8, 1);
-is = java.io.BufferedReader(java.io.InputStreamReader(process.getInputStream()));
-os = java.io.OutputStreamWriter(process.getOutputStream());
-pause(3);
-disp('test');
-os.write('\n');
-os.close();
-x = is.ready();
-while x
-    disp(is.readLine());
-    x = is.ready()
-end
-is.close();
-process.waitFor()
+delete(pwr);
