@@ -83,8 +83,8 @@ if __name__ == '__main__':
         print "Error: failed to enable realtime scheduling."
     tb = tx(freq=options.freq, gain=options.gain, filename=options.filename, samples=options.samples, samp_rate=options.samp_rate, wire=options.wire)
     tb.start()
-    if samples == 0:
-        input() 
+    if options.samples == 0:
+        raw_input() 
         tb.stop()
     tb.wait()
 
