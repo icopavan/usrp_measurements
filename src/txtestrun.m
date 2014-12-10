@@ -2,7 +2,7 @@ N_sample = 50e6;
 N_meas = 10;
 wire = 8;
 rffreqs = 400e6:50e6:4.4e9;
-ampl = 0.8;
+ampl = 1;
 gains = 0:5:30;
 gains(end+1) = 31.5;
 
@@ -29,7 +29,7 @@ for i = 1:length(gains)
                 fprintf(1, '%d. %g: %gdB\n', k, rffreqs(j), pow);
             end
         toc
-        save(savefile, 'pows');
+        save(savefile, 'pows', 'rffreqs', 'gains', 'ampl');
     end
 end
 
