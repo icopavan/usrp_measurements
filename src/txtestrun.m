@@ -34,3 +34,5 @@ for i = 1:length(gains)
 end
 
 delete(pwr);
+
+sendmail(email, 'Messung ist fertig', 'blubb', {savefile})
