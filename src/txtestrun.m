@@ -2,37 +2,27 @@ N_sample = 50e6;
 N_meas = 10;
 wire = 8;
 rffreqs = 400e6:50e6:4.4e9;
-ampl = 1;
+ampl = 0.8;
 gains = 0:5:30;
 gains(end+1) = 31.5;
 
-mkdir(datestr(date));
-savefile = strcat(datestr(date), sprintf('/tx_%d_%d_%1.1f.mat', N_sample/1e6, wire, ampl));
+now = datestr(date);
+mkdir(now);
+
 
 pwr = PWR('128.131.85.239');
-v = ones(1, 5000)*ampl;
 
-pows = zeros(length(gains), N_meas, length(rffreqs));
+ampl = 0.8;
 
-for i = 1:length(gains)
-    fprintf(1, '---------------------\n');
-    fprintf(1, 'gain %d\n', gains(i)); 
-    fprintf(1, '=====================\n');
-    for j = 1:length(rffreqs)
-        tic
-            for k = 1:N_meas
-                status = 1;
-                while status ~= 0
-                    [pow, status] = txmeasure(pwr, rffreqs(j), gains(i), v, N_sample, wire);
-                end
-                pows(i, k, j) = pow;
-                fprintf(1, '%d. %g: %gdB\n', k, rffreqs(j), pow);
-            end
-        toc
-        save(savefile, 'pows', 'rffreqs', 'gains', 'ampl');
-    end
-end
+savefile = strcat(now, sprintf('/tx_%d_%d_%1.1f.mat', N_sample/1e6, wire, ampl));
+pows = txmeasuresweep(gains, rffreqs, ampl, N_meas, N_sample, wire, pwr, savefile);
+sendmail(email, 'Messung 0.8 ist fertig', 'blubb', {savefile});
+
+ampl = 1;
+
+savefile = strcat(now, sprintf('/tx_%d_%d_%1.1f.mat', N_sample/1e6, wire, ampl));
+pows = txmeasuresweep(gains, rffreqs, ampl, N_meas, N_sample, wire, pwr, savefile);
+sendmail(email, 'Messung  1 ist fertig', 'blubb', {savefile});
 
 delete(pwr);
 
-sendmail(email, 'Messung ist fertig', 'blubb', {savefile})
