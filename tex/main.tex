@@ -1,0 +1,181 @@
+\documentclass[12pt,a4paper,parskip=full]{scrreprt}
+\usepackage{cite}
+\usepackage[dvips]{graphicx}
+\graphicspath{{graphics/}}
+
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{tocloft}
+
+\usepackage{pstricks}
+\usepackage{pst-node}
+\usepackage{pst-blur}
+\usepackage{url}
+
+\usepackage{makeidx}
+\usepackage[colorlinks,hyperindex,plainpages=false,
+pdftitle={High-frequency characterization of a Software Defined Radio (SDR) platform},
+pdfauthor={Gernot Vormayr},
+pdfsubject={Bachelor thesis},
+pdfkeywords={Hochfrequenz,Software Defined Radio,SDR,GNU Radio,USRP},
+pdfpagelabels,
+pagebackref,
+bookmarksopen=false
+]{hyperref}
+
+\usepackage{cleveref}
+
+\usepackage{siunitx}
+\usepackage{pgfplots}
+
+\pgfplotsset{compat=1.11}
+
+\DeclareSIUnit \belm {Bm}
+
+\begin{document}
+\begin{titlepage}
+    \enlargethispage{1cm}
+    \centering
+    \begin{minipage}{0.49\textwidth}
+        \includegraphics[height=1.2cm,keepaspectratio]{EMCE_Logo_CMYK_color}
+    \end{minipage}
+    \begin{minipage}{0.49\textwidth}
+        \flushright
+        \includegraphics[height=1.2cm,keepaspectratio]{TULogo_CMYK}
+    \end{minipage}\\
+    \vspace*{5cm}
+    {\Huge \textbf{Bachelor thesis}}\\
+    \vspace*{1cm}
+    {\Large High-frequency characterization of a Software Defined Radio (SDR) platform}
+
+    \vspace*{2cm}
+    {\large Gernot ~\textsc{Vormayr} ~\\ 0425210 } ~\\ 
+
+    \vfill
+    {Supervisor} ~\\\vspace*{0.1cm}
+    {Ass.Prof. Dipl.-Ing. Dr.techn. \large Holger ~\textsc{Arthaber}} ~\\
+    {Univ.Ass. Dipl.-Ing. Dr.techn. \large Thomas ~\textsc{Faseth}}
+    \vspace*{2cm}
+
+    \rule{\textwidth}{0.4pt}
+    \begin{minipage}[t]{0.70\textwidth}
+        \begin{large}
+            EMCE - Institute of Electrodynamics, Microwave and Circuit Engineering
+        \end{large}\\
+        Vienna University of Technology
+    \end{minipage}
+    \hspace{1pt}
+    \begin{minipage}[t]{0.27\textwidth}
+        Gusshausstrasse 25\\
+        1040 Vienna\\
+        www.emce.tuwien.ac.at
+    \end{minipage}
+    \vspace*{-3pt}
+    \rule{\textwidth}{0.4pt}
+    \clearpage
+\end{titlepage}
+
+\tableofcontents
+
+\begin{abstract}
+    Abstract could be here
+\end{abstract}
+
+\chapter{Introduction}
+\section{Ettus Research USRP N210}
+\section{GNU Radio}
+\chapter{Measurement Setup}
+\section{GNU Radio}
+\section{Matlab}
+\section{Meters}
+\chapter{Measurement Results}
+\section{RF Frequency Response}
+\subsection{RX}
+\begin{tikzpicture}
+    \begin{axis}[
+        title=Input power needed for full scale,
+        legend pos = north east,
+        legend style={font=\footnotesize},
+        xlabel={gain (\si{\deci\bel})},
+        ylabel={power (\si{\deci\belm})},
+        minor tick num = 1
+        ]
+        \addplot[mark = +] table {data/rf/rx/8/dbm_400};
+        \addplot[mark = x] table {data/rf/rx/8/dbm_2400};
+        \addplot[mark = asterisk] table {data/rf/rx/8/dbm_4400};
+        \legend{\SI{400}{MHz},\SI{2.4}{GHz},\SI{4.4}{GHz}}
+    \end{axis}
+\end{tikzpicture}
+
+
+\begin{tikzpicture}
+    \begin{axis}[
+        title=Input power needed for full scale,
+        legend pos = south east,
+        legend style={font=\footnotesize},
+        ylabel={gain (\si{\deci\bel})},
+        xlabel={frequency (\si{\hertz})},
+        width=12cm,
+        height=5cm,
+        scale only axis,
+        minor tick num = 1,
+        legend columns = 3
+        ]
+        \addplot[mark = +] table {data/rf/rx/8/f_0};
+        \addplot[mark = x] table {data/rf/rx/8/f_15};
+        \addplot[mark = asterisk] table {data/rf/rx/8/f_30};
+        \legend{\SI{0}{dBm},\SI{15}{dBm},\SI{30}{dBm}}
+    \end{axis}
+\end{tikzpicture}
+\subsection{TX}
+\begin{tikzpicture}
+    \begin{axis}[
+        title={Output power, 0.8fsc},
+        legend pos = south west,
+        legend style={font=\footnotesize},
+        ylabel={gain (\si{\deci\bel})},
+        xlabel={frequency (\si{\hertz})},
+        width=12cm,
+        height=5cm,
+        scale only axis,
+        minor tick num = 1,
+        legend columns = 3,
+        ymin = -25
+        ]
+        \addplot[mark = +] table {data/rf/tx/0.8/0.0};
+        \addplot[mark = x] table {data/rf/tx/0.8/10.0};
+        \addplot[mark = asterisk] table {data/rf/tx/0.8/20.0};
+        \addplot[mark = star] table {data/rf/tx/0.8/30.0};
+        \addplot[mark = 10-pointed star] table {data/rf/tx/0.8/31.5};
+        \legend{\SI{0}{dBm},\SI{10}{dBm},\SI{20}{dBm},\SI{30}{dBm},\SI{31.5}{dBm}}
+    \end{axis}
+\end{tikzpicture}
+
+
+\begin{tikzpicture}
+    \begin{axis}[
+        title={Output power, 1fsc},
+        legend pos = south west,
+        legend style={font=\footnotesize},
+        ylabel={gain (\si{\deci\bel})},
+        xlabel={frequency (\si{\hertz})},
+        width=12cm,
+        height=5cm,
+        scale only axis,
+        minor tick num = 1,
+        legend columns = 3,
+        ymin = -25
+        ]
+        \addplot[mark = +] table {data/rf/tx/1.0/0.0};
+        \addplot[mark = x] table {data/rf/tx/1.0/10.0};
+        \addplot[mark = asterisk] table {data/rf/tx/1.0/20.0};
+        \addplot[mark = star] table {data/rf/tx/1.0/30.0};
+        \addplot[mark = 10-pointed star] table {data/rf/tx/1.0/31.5};
+        \legend{\SI{0}{dBm},\SI{10}{dBm},\SI{20}{dBm},\SI{30}{dBm},\SI{31.5}{dBm}}
+    \end{axis}
+\end{tikzpicture}
+
+\section{IF Frequency Response}
+\section{Intermodulation Properties}
+\end{document}
