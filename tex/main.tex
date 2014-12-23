@@ -38,11 +38,11 @@ bookmarksopen=false
     \enlargethispage{1cm}
     \centering
     \begin{minipage}{0.49\textwidth}
-        \includegraphics[height=1.2cm,keepaspectratio]{EMCE_Logo_CMYK_color}
+        \includegraphics[height=1.5cm,keepaspectratio]{EMCE_Logo_CMYK_color}
     \end{minipage}
     \begin{minipage}{0.49\textwidth}
         \flushright
-        \includegraphics[height=1.2cm,keepaspectratio]{TULogo_CMYK}
+        \includegraphics[height=1.5cm,keepaspectratio]{TULogo_CMYK}
     \end{minipage}\\
     \vspace*{5cm}
     {\Huge \textbf{Bachelor thesis}}\\
@@ -95,7 +95,7 @@ bookmarksopen=false
 \begin{tikzpicture}
     \begin{axis}[
         title=Input power needed for full scale,
-        legend pos = north east,
+        legend pos = outer north east,
         legend style={font=\footnotesize},
         xlabel={gain (\si{\deci\bel})},
         ylabel={power (\si{\deci\belm})},
@@ -112,15 +112,14 @@ bookmarksopen=false
 \begin{tikzpicture}
     \begin{axis}[
         title=Input power needed for full scale,
-        legend pos = south east,
+        legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={gain (\si{\deci\bel})},
         xlabel={frequency (\si{\hertz})},
         width=12cm,
         height=5cm,
         scale only axis,
-        minor tick num = 1,
-        legend columns = 3
+        minor tick num = 1
         ]
         \addplot[mark = +] table {data/rf/rx/8/f_0};
         \addplot[mark = x] table {data/rf/rx/8/f_15};
@@ -132,7 +131,7 @@ bookmarksopen=false
 \begin{tikzpicture}
     \begin{axis}[
         title={Output power, 0.8fsc},
-        legend pos = south west,
+        legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={gain (\si{\deci\bel})},
         xlabel={frequency (\si{\hertz})},
@@ -140,7 +139,6 @@ bookmarksopen=false
         height=5cm,
         scale only axis,
         minor tick num = 1,
-        legend columns = 3,
         ymin = -25
         ]
         \addplot[mark = +] table {data/rf/tx/0.8/0.0};
@@ -156,7 +154,7 @@ bookmarksopen=false
 \begin{tikzpicture}
     \begin{axis}[
         title={Output power, 1fsc},
-        legend pos = south west,
+        legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={gain (\si{\deci\bel})},
         xlabel={frequency (\si{\hertz})},
@@ -164,7 +162,6 @@ bookmarksopen=false
         height=5cm,
         scale only axis,
         minor tick num = 1,
-        legend columns = 3,
         ymin = -25
         ]
         \addplot[mark = +] table {data/rf/tx/1.0/0.0};
