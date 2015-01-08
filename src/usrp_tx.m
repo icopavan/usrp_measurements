@@ -13,7 +13,7 @@ function status = usrp_tx(frequency, gain, v, samples, samp_rate, wire, async)
         async = 0;
     end
     tmp = '/run/shm/source';
-    store_data(tmp, v);
+    store_data(tmp, v, wire);
     cmd = sprintf('./tx_final.py --freq=%g --gain=%g --samples=%d --filename=%s --samp-rate=%g --wire=%d', frequency, gain, samples, tmp, samp_rate, wire);
     if async == 0
         [status, result] = system(cmd);

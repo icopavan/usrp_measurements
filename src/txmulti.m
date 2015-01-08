@@ -1,9 +1,39 @@
-N_sample = 50e6;
-wire = 8;
-f = zeros(1, N_sample);
+fsample = 25e6;
+wire = 16;
+ampl = 0.7;
+gain = 10;
 
-f(25e6) = 1;
-f(30e6) = 1;
-y = ifft(ifftshift(f));
-y = y/(max(max(real(y)), max(imag(y))))*127*0.8;
-usrp_tx(2.4e9, 9, y, N_sample*30, N_sample, wire);
+df = 1e6;
+num = 2;
+
+f = (-(num-1)/2 : (num-1)/2) * df;
+t = (0 : 2*fsample/df-1) / fsample;
+ph = rand(size(f)) * 2 * pi;
+
+[tm, phm] = meshgrid(t, ph);
+
+s = sum(exp(1i*(2*pi*diag(f)*tm)));
+s = s./max(abs(s));
+
+y = s*(2^(wire-1)-1)*ampl;
+
+process = usrp_tx(2e9, gain, y, 0, fsample, wire, 1);
+is = java.io.BufferedReader(java.io.InputStreamReader(process.getInputStream()));
+os = java.io.OutputStreamWriter(process.getOutputStream());
+pause;
+os.write('\n');
+os.close();
+x = is.ready();
+while x
+    line = is.readLine();
+    x = is.ready();
+end
+is.close();
+status = process.waitFor();
+if strncmp(line, 'Using', 5)
+    line = '';
+end
+if strncmp(line, '--', 2)
+    line = '';
+end
+status = status + length(line)
