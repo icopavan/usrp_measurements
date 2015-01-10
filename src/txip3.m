@@ -59,7 +59,7 @@ for i = 1:N;
         end
         res(j, i,:) = [ampls(i), m1, m2, m3, m4];
         fprintf(1, 'ampl: %g ph: %d, %g %g\n', ampls(i), j, m1, m3);
-        save(savefile, 'res', 'num', 'df', 'cfreq', 'gain', 'ampls', 'fsample', 'wire');
+        save(savefile, 'res', 'num', 'df', 'cfreq', 'gain', 'ampls', 'fsample', 'wire', 'phs');
     end
 end
 
