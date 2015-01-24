@@ -13,6 +13,7 @@ classdef ZVL < handle
         span;
         points;
         display;
+        avg_cnt;
     end
     
     methods
@@ -28,7 +29,7 @@ classdef ZVL < handle
             fprintf(obj.comm, 'INIT:CONT OFF\n');
             fprintf(obj.comm, 'INIT:SCOP SING\n');
             fprintf(obj.comm, 'DISP:TRAC:MODE AVER\n');
-            fprintf(obj.comm, 'SWE:COUN 10\n');
+            fprintf(obj.comm, 'SWE:COUN 5\n');
             fprintf(obj.comm, 'DET RMS\n');
             fprintf(obj.comm, 'SWE:POIN 161\n');
             obj.m = Marker(obj);
@@ -111,6 +112,13 @@ classdef ZVL < handle
         end
         function value = get.display(obj)
             value = obj.query('SYST:SETT:UPD?');
+        end
+        
+        function set.avg_cnt(obj, value)
+            obj.waitCommand('SWE:COUN %d\n', value);
+        end
+        function value = get.avg_cnt(obj)
+            value = obj.query('SWE:COUN?');
         end
         
         function value = sweep(obj)
