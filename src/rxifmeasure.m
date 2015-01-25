@@ -2,7 +2,6 @@ gains = [0 15 31.5];
 cfreqs = (400:100:4400)*1e6;
 ifreqs8 = (-24:1:24)*1e6;
 ifreqs16 = (-12:0.5:12)*1e6;
-N = 5;
 
 res8 = zeros(length(gains), length(cfreqs), length(ifreqs8), N);
 res16 = zeros(length(gains), length(cfreqs), length(ifreqs16), N);
@@ -26,12 +25,13 @@ for i = 1:length(gains)
             fprintf(1, 'gain: %gdB out: %gdBm cf: %4dMHz if: %3dMHz 8Bit: ', gains(i), out, cfreqs(j)/1e6, ifreqs8(k)/1e6);
             status = 1;
             while status ~= 0
-                [status, y] = rxifsingle(50e6, 8, gains(i), cfreqs(j), ifreqs8(k), N);
+                [status, y] = rxifsingle(50e6, 8, gains(i), cfreqs(j), ifreqs8(k));
                 if status ~= 0
                     fprintf(1, 'Error %d!\n', status);
                 end
             end
-            res8(i, j , k, :) = y;
+            res8(i, j , k) = y;
+            fprintf(1, '%gdBfsc\n ', y);
             save(savefile, 'gains', 'cfreqs', 'ifreqs8', 'ifreqs16', 'res8', 'res16');
         end
         toc
@@ -42,12 +42,13 @@ for i = 1:length(gains)
             fprintf(1, 'gain: %gdB out: %gdBm cf: %4dMHz if: %3dMHz 16Bit: ', gains(i), out, cfreqs(j)/1e6, ifreqs16(k)/1e6);
             status = 1;
             while status ~= 0
-                [status, y] = rxifsingle(25e6, 16, gains(i), cfreqs(j), ifreqs16(k), N);
+                [status, y] = rxifsingle(25e6, 16, gains(i), cfreqs(j), ifreqs16(k));
                 if status ~= 0
                     fprintf(1, 'Error %d!\n', status);
                 end
             end
-            res16(i, j , k, :) = y;
+            res16(i, j , k) = y;
+            fprintf(1, '%gdBfsc\n ', y);
             save(savefile, 'gains', 'cfreqs', 'ifreqs8', 'ifreqs16', 'res8', 'res16');
         end
         toc
