@@ -14,12 +14,11 @@ classdef SMIQ < handle
             import py.vxi11.Instrument;
             obj.comm = Instrument(addressa, addressb);
             if (nargin == 2) || preset
-                obj.comm.write('*RST\n');
+                obj.comm.write('*RST');
             end
             if (nargin == 4)
-                obj.comm.write(sprintf(':POW:LIM %f\n', limit));
+                obj.comm.write(sprintf(':POW:LIM %f', limit));
             end
-            obj.comm.write('*ESE 1\n');
             obj.rf = false;
         end
         
@@ -27,20 +26,18 @@ classdef SMIQ < handle
             obj.rf = false;
         end
         
-        function waitComplete(obj)
-            status = 0;
-%            while status ~= 1
-                status = str2double(char(obj.comm.ask('*OPC;*ESR?')));
-%            end
-        end
-        
         function sendCommand(obj, varargin)
             obj.comm.write(sprintf(varargin{:}));
         end
         
         function waitCommand(obj, varargin)
+            obj.comm.write('*CLS');
             obj.sendCommand(varargin{:});
-            obj.waitComplete();
+            obj.comm.write('*OPC')
+            status = 0;
+            while (status&1) == 0
+                status = obj.queryDouble('*ESR?');
+            end
         end
         
         function value = query(obj, varargin)
@@ -54,14 +51,14 @@ classdef SMIQ < handle
     
     methods
         function set.freq(obj, value)
-            obj.waitCommand(':FREQ %f\n', value);
+            obj.waitCommand(':FREQ %f', value);
         end
         function value = get.freq(obj)
             value = obj.queryDouble(':FREQ?');
         end
         
         function set.pow(obj, p)
-            obj.waitCommand(':POW %f\n', p);
+            obj.waitCommand(':POW %f', p);
         end
         function value = get.pow(obj)
             value = obj.queryDouble(':POW?');
@@ -73,7 +70,7 @@ classdef SMIQ < handle
             else
                 value = 'OFF';
             end
-            obj.waitCommand(':OUTP %s\n', value);
+            obj.waitCommand(':OUTP %s', value);
         end
         function value = get.rf(obj)
             value = obj.queryDouble(':OUTP?');
