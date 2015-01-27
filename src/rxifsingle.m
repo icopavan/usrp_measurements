@@ -1,4 +1,4 @@
-function [ status, res ] = rxifsingle(fsample, wire, gain, cfreq, ifreq)
+function [ status, p, y ] = rxifsingle(fsample, wire, gain, cfreq, ifreq)
     status = 1;
     while status ~= 0
         [v, status] = usrp_rx(cfreq, gain, fsample, 0, 0, fsample, wire);
@@ -6,6 +6,7 @@ function [ status, res ] = rxifsingle(fsample, wire, gain, cfreq, ifreq)
             disp('Overflow!');
         end
     end
-    res = pow2db(bandpower(v, fsample, [ifreq-50e3, ifreq+50e3]));
+    p = pow2db(bandpower(v, fsample, [ifreq-50e3, ifreq+50e3]));
+    y = sqrt(mean(abs((v-mean(v)).^2)));
 end
 
