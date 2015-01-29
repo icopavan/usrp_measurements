@@ -12,13 +12,13 @@ mkdir(now);
 savefile = strcat(now, '/txif.mat');
 
 zvl = ZVL('128.131.85.229');
-zvl.span = 5e6;
+zvl.span = 1e6;
 zvl.ref = 0;
 zvl.rbw = 100e3;
 zvl.att = 10;
 zvl.display = 'OFF';
 zvl.points = 1001;
-zvl.avg_cnt = 20;
+zvl.avg_cnt = 50;
 zvl.m(1).enable = true;
 
 for i = 1:length(gains)
