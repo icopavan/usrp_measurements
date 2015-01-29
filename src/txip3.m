@@ -1,12 +1,11 @@
 fsample = 25e6;
 wire = 16;
-ampl = 0.7;
-gain = 20;
+gain = 10;
 cfreq = 2e9;
-N = 10;
-start = 0.2;
-stop = 1;
-nsig = 100;
+N = 20;
+start = -1;
+stop = 0;
+nsig = 50;
 
 df = 1e6;
 num = 2;
@@ -28,14 +27,15 @@ for i = 1:nsig
 end
 
 delete(zvl);
-zvl = ZVL('128.131.85.229');
+zvl = ZVL('128.131.85.230');
 zvl.cfreq = cfreq;
 zvl.span = 5e6;
-zvl.ref = 0;
-zvl.rbw = 1e3;
-zvl.vbw = 3e3;
-zvl.att = 20;
+zvl.ref = 5;
+zvl.rbw = 100e3;
+zvl.att = 10;
 zvl.display = 'ON';
+zvl.points = 1001;
+zvl.avg_cnt = 50;
 zvl.m(1).enable = true;
 zvl.m(1).freq = cfreq+f(1);
 zvl.m(2).enable = true;
@@ -46,9 +46,10 @@ zvl.m(4).enable = true;
 zvl.m(4).freq = cfreq+f(2)+df;
 
 res = zeros(nsig, N, 5);
-ampls = linspace(start, stop, N);
+ampls = logspace(start, stop, N);
 
 for i = 1:N;
+    tic
     for j = 1:nsig
         status = 1;
         while status ~= 0
@@ -61,8 +62,9 @@ for i = 1:N;
         fprintf(1, 'ampl: %g ph: %d, %g %g\n', ampls(i), j, m1, m3);
         save(savefile, 'res', 'num', 'df', 'cfreq', 'gain', 'ampls', 'fsample', 'wire', 'phs');
     end
+    toc
 end
 
-sendmail(email, 'Messung IP3', 'blubb', {savefile});
+sendmail(email, 'Messung TXIP3', 'blubb', {savefile});
 
 delete(zvl);
