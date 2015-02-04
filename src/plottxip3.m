@@ -1,34 +1,38 @@
-load('08-Jan-2015/tx_ip3.mat');
-
-
-cable = dlmread('08-Jan-2015/kabel_txip3.s2p', '\t', 5, 0);
-cable = -20*log10(abs(cable(33,6)+1j*cable(33,7)));
+load('29-Jan-2015/tx_ip3.mat');
 
 X = 20*log10(res(1,:,1));
-La = log10(mean(10.^res(:,:,2)))+cable;
-LIM3 = log10(mean(10.^res(:,:,4)))+cable;
+La = log10(mean(10.^res(:,:,2))) - gain;
+LIM3 = log10(mean(10.^res(:,:,4)));
 
-mkdir('../tex/data');
-mkdir('../tex/data/ip3');
-mkdir('../tex/data/ip3/tx');
-dlmwrite('../tex/data/ip3/tx/la', [X' La'], 'delimiter', '\t');
-dlmwrite('../tex/data/ip3/tx/im3', [X' LIM3'], 'delimiter', '\t');
+load('29-Jan-2015/caltx_ip3.mat');
+realLa = log10(mean(reshape(mean(10.^res, 3), 50, 20))) - 10*log10(2) - gain;
+mErr = La - realLa;
+LIM3 = LIM3 - mErr;
+La = realLa;
 
-pLa = polyfit(X(3:end), La(3:end), 1)
-pLIM3 = polyfit(X(3:end), LIM3(3:end), 1)
+
+basedir = '../tex/data/ip3/tx/';
+
+mkdir(basedir);
+
+dlmwrite(sprintf('%sla', basedir), [X' La'], 'delimiter', '\t');
+dlmwrite(sprintf('%sim3', basedir), [X' LIM3'], 'delimiter', '\t');
+
+pLa = polyfit(X(1:end), La(1:end), 1)
+pLIM3 = polyfit(X(11:end), LIM3(11:end), 1)
+
+pX = linspace(-20, 15);
 
 yLa = polyval(pLa, pX);
 yLIM3 = polyval(pLIM3, pX);
 
-pX = linspace(-14, 20);
-
 [IM3x, IM3y] = polyxpoly(pX, yLa, pX, yLIM3);
-dlmwrite('../tex/data/ip3/tx/pim3', [IM3x, IM3y], 'delimiter', '\t');
+dlmwrite(sprintf('%spim3', basedir), [IM3x, IM3y], 'delimiter', '\t');
 
 hold off;
-plot(X,La,'x-');
+plot(X,La,'x');
 hold on;
-plot(X,LIM3,'*-');
+plot(X,LIM3,'*');
 plot(pX,yLa);
 plot(pX,yLIM3);
 plot(IM3x, IM3y, '+');

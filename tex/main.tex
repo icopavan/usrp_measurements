@@ -91,6 +91,7 @@ bookmarksopen=false
 \section{Meters}
 \chapter{Measurement Results}
 \section{RF Frequency Response}
+
 \subsection{RX}
 \begin{tikzpicture}
     \begin{axis}[
@@ -128,6 +129,7 @@ bookmarksopen=false
     \end{axis}
 \end{tikzpicture}
 \subsection{TX}
+16dB
 \begin{tikzpicture}
     \begin{axis}[
         title={Output power, 0.8fsc},
@@ -175,12 +177,13 @@ bookmarksopen=false
 
 \section{IF Frequency Response}
 \section{Intermodulation Properties}
+10dB
 \begin{tikzpicture}
     \begin{axis}[
         title={IP3 TX},
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={$L_a$ (\si{\deci\bel})},
+        ylabel={$L_a$ (\si{\deci\belm})},
         xlabel={$L_e$ (\si{\deci\bel})},
         width=12cm,
         height=5cm,
@@ -190,10 +193,12 @@ bookmarksopen=false
         \addplot[only marks, mark = +] table {data/ip3/tx/la};
         \addplot[only marks, mark = x] table {data/ip3/tx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/tx/pim3};
-        \addplot[domain = -15:22, samples = 201] {0.9892*x-4.2994};
-        \addplot[domain = -15:22, samples = 201] {3.0666*x-44.3655};
+        \addplot[domain = -20:15, samples = 201] {0.9911*x-10.8085};
+        \addplot[domain = -20:15, samples = 201] {3.3325*x-39.1148};
         \legend{$L_a$,$L_{IM3}$,$IM3$}
     \end{axis}
 \end{tikzpicture}
+
+tx: 10db dcblock power splitter
 
 \end{document}
