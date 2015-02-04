@@ -29,8 +29,8 @@ Files(s) | Purpose
 [txtestrun.m](txtestrun.m) [txmeasure.m](txmeasure.m) [txmeasuresweep.m](txmeasuresweep.m) [exportrftx.m](exportrftx.m) | TX RF measurement script
 [rxifmeasure.m](rxifmeasure.m) [rxifsingle.m](rxifsingle.m) [rxifcal.m](rxifcal.m) | RX IF measurement script
 [txifmeasure.m](txifmeasure.m) [txifsingle.m](txifsingle.m) [txifcal.m](txifcal.m) [txifsinglecal.m](txifsinglecal.m) | TX IF measurement script
-[rxip3.m](rxip3.m) [rxm4.m](rxm4.m) [calrxip3.m](calrxip3.m) | RX IP3 measurement script
-[txip3.m](txip3.m) [txm4.m](txm4.m) [caltxip3.m](caltxip3.m) [caltxm4.m](caltxm4.m) | TX IP3 measurement script
+[rxip3.m](rxip3.m) [rxm4.m](rxm4.m) [calrxip3.m](calrxip3.m) [plotrxip3.m](plotrxip3.m) | RX IP3 measurement script
+[txip3.m](txip3.m) [txm4.m](txm4.m) [caltxip3.m](caltxip3.m) [caltxm4.m](caltxm4.m) [plotrxip3.m](plotrxip3.m) | TX IP3 measurement script
 
 
 Raw Measurement results
