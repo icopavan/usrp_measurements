@@ -177,6 +177,28 @@ bookmarksopen=false
 
 \section{IF Frequency Response}
 \section{Intermodulation Properties}
+\subsection{RX}
+\begin{tikzpicture}
+    \begin{axis}[
+        title={IP3 RX},
+        legend pos = outer north east,
+        legend style={font=\footnotesize},
+        ylabel={$L_a$ (\si{\deci\bel})},
+        xlabel={$L_e$ (\si{\deci\belm})},
+        width=12cm,
+        height=5cm,
+        scale only axis,
+        minor tick num = 1,
+        ]
+        \addplot[only marks, mark = +] table {data/ip3/rx/la};
+        \addplot[only marks, mark = x] table {data/ip3/rx/im3};
+        \addplot[only marks, mark = asterisk] table {data/ip3/rx/pim3};
+        \addplot[domain = -60:-5, samples = 201] {0.9117*x+88.0799};
+        \addplot[domain = -60:-5, samples = 201] {3.0918*x+110.8365};
+        \legend{$L_a$,$L_{IM3}$,$IM3$}
+    \end{axis}
+\end{tikzpicture}
+\subsection{TX}
 10dB
 \begin{tikzpicture}
     \begin{axis}[
