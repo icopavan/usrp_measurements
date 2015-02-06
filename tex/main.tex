@@ -1,6 +1,6 @@
 \documentclass[12pt,a4paper,parskip=full]{scrreprt}
 \usepackage{cite}
-\usepackage[dvips]{graphicx}
+\usepackage[pdftex]{graphicx}
 \graphicspath{{graphics/}}
 
 \usepackage[cmex10]{amsmath}
@@ -8,9 +8,6 @@
 \usepackage{listings}
 \usepackage{tocloft}
 
-\usepackage{pstricks}
-\usepackage{pst-node}
-\usepackage{pst-blur}
 \usepackage{url}
 
 \usepackage{makeidx}
@@ -30,6 +27,14 @@ bookmarksopen=false
 \usepackage{pgfplots}
 
 \pgfplotsset{compat=1.11}
+\pgfplotsset{every axis plot/.append style={smooth}} 
+
+\usepgfplotslibrary{units}
+\pgfplotsset{unit code/.code 2 args={\si{#1#2}}}
+
+\usepgfplotslibrary{external}
+\tikzexternalize
+\tikzsetexternalprefix{figures/}
 
 \DeclareSIUnit \belm {Bm}
 
@@ -98,8 +103,10 @@ bookmarksopen=false
         title=Input power needed for full scale,
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        xlabel={gain (\si{\deci\bel})},
-        ylabel={power (\si{\deci\belm})},
+        xlabel={gain},
+        ylabel={power},
+        x unit={\deci\bel},
+        y unit={\deci\belm},
         minor tick num = 1
         ]
         \addplot[mark = +] table {data/rf/rx/8/dbm_400};
@@ -115,8 +122,12 @@ bookmarksopen=false
         title=Input power needed for full scale,
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={gain (\si{\deci\bel})},
-        xlabel={frequency (\si{\hertz})},
+        ylabel={gain},
+        xlabel={frequency},
+        y unit={\deci\bel},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
         width=12cm,
         height=5cm,
         scale only axis,
@@ -135,8 +146,12 @@ bookmarksopen=false
         title={Output power, 0.8fsc},
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={gain (\si{\deci\bel})},
-        xlabel={frequency (\si{\hertz})},
+        ylabel={gain},
+        xlabel={frequency},
+        y unit={\deci\bel},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
         width=12cm,
         height=5cm,
         scale only axis,
@@ -158,8 +173,12 @@ bookmarksopen=false
         title={Output power, 1fsc},
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={gain (\si{\deci\bel})},
-        xlabel={frequency (\si{\hertz})},
+        ylabel={gain},
+        xlabel={frequency},
+        y unit={\deci\bel},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
         width=12cm,
         height=5cm,
         scale only axis,
@@ -176,6 +195,71 @@ bookmarksopen=false
 \end{tikzpicture}
 
 \section{IF Frequency Response}
+\subsection{TX}
+\begin{tikzpicture}
+    \begin{axis}[
+        title={IF TX 16 Bit gain 15.0},
+        ylabel={if frequency},
+        xlabel={rf frequency},
+        zlabel={output power},
+        xlabel style={sloped},
+        ylabel style={sloped},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
+        y unit={\hertz},
+        change y base,
+        y SI prefix=mega,
+        z unit={\deci\belm},
+        width=12cm,
+        height=5cm,
+        scale only axis,
+        minor tick num = 1,
+        ]
+        \addplot3[surf,mesh/cols=41] table {data/if/tx/mesh16_15.0};
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+    \begin{axis}[
+        title={IF TX gain 15.0 rf 2GHz},
+        legend pos = outer north east,
+        xlabel={if frequency},
+        ylabel={output power},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=mega,
+        y unit={\deci\belm},
+        width=12cm,
+        height=5cm,
+        scale only axis,
+        minor tick num = 1,
+        ]
+        \addplot[mark = +] table {data/if/tx/16_2000_15.0};
+        \addplot[mark = star] table {data/if/tx/8_2000_15.0};
+        \node (rechtsoben) at (axis description cs:1,1) {};
+        \legend{16 Bit,8 Bit}
+    \end{axis}
+    \begin{axis}[
+        at={(rechtsoben)},
+        anchor=north east,
+        scale only axis,
+        minor tick num = 1,
+        axis background/.style={fill=white},
+        tick label style={font=\tiny},
+        xmin = -3e6,
+        xmax = 3e6,
+        ymax = -8.6,
+        ymin = -9.8,
+        scaled x ticks={base 10:-6},
+        xtick scale label code/.code={},
+        width = 2cm
+        ]
+        \addplot[mark = +] table {data/if/tx/16_2000_15.0};
+        \addplot[mark = star] table {data/if/tx/8_2000_15.0};
+    \end{axis}
+\end{tikzpicture}
+
 \section{Intermodulation Properties}
 \subsection{RX}
 \begin{tikzpicture}
@@ -183,8 +267,10 @@ bookmarksopen=false
         title={IP3 RX},
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={$L_a$ (\si{\deci\bel})},
-        xlabel={$L_e$ (\si{\deci\belm})},
+        ylabel={$L_a$},
+        xlabel={$L_e$},
+        y unit={\deci\bel},
+        x unit={\deci\belm},
         width=12cm,
         height=5cm,
         scale only axis,
@@ -193,8 +279,8 @@ bookmarksopen=false
         \addplot[only marks, mark = +] table {data/ip3/rx/la};
         \addplot[only marks, mark = x] table {data/ip3/rx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/rx/pim3};
-        \addplot[domain = -60:-5, samples = 201] {0.9117*x+88.0799};
-        \addplot[domain = -60:-5, samples = 201] {3.0918*x+110.8365};
+        \addplot[domain = -62:-8, samples = 201, dotted] {0.9117*x+88.0799};
+        \addplot[domain = -62:-8, samples = 201, dotted] {3.0918*x+110.8365};
         \legend{$L_a$,$L_{IM3}$,$IM3$}
     \end{axis}
 \end{tikzpicture}
@@ -205,8 +291,10 @@ bookmarksopen=false
         title={IP3 TX},
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={$L_a$ (\si{\deci\belm})},
-        xlabel={$L_e$ (\si{\deci\bel})},
+        ylabel={$L_a$},
+        xlabel={$L_e$},
+        x unit={\deci\bel},
+        y unit={\deci\belm},
         width=12cm,
         height=5cm,
         scale only axis,
@@ -215,8 +303,8 @@ bookmarksopen=false
         \addplot[only marks, mark = +] table {data/ip3/tx/la};
         \addplot[only marks, mark = x] table {data/ip3/tx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/tx/pim3};
-        \addplot[domain = -20:15, samples = 201] {0.9911*x-10.8085};
-        \addplot[domain = -20:15, samples = 201] {3.3325*x-39.1148};
+        \addplot[domain = -22:13, samples = 201,dotted] {0.9911*x-10.8085};
+        \addplot[domain = -22:13, samples = 201,dotted] {3.3325*x-39.1148};
         \legend{$L_a$,$L_{IM3}$,$IM3$}
     \end{axis}
 \end{tikzpicture}
