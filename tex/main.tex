@@ -1,4 +1,8 @@
 \documentclass[12pt,a4paper,parskip=full]{scrreprt}
+
+%display boundaries
+%\usepackage{showframe}
+
 \usepackage{cite}
 \usepackage[pdftex]{graphicx}
 \graphicspath{{graphics/}}
@@ -31,6 +35,9 @@ bookmarksopen=false
 
 \usepgfplotslibrary{units}
 \pgfplotsset{unit code/.code 2 args={\si{#1#2}}}
+
+\usepackage{tikz}
+\usetikzlibrary{dsp,chains,fit}
 
 \usepgfplotslibrary{external}
 \tikzexternalize
@@ -89,18 +96,237 @@ bookmarksopen=false
 
 \chapter{Introduction}
 \section{Ettus Research USRP N210}
+\begin{itemize}
+    \item Analog in Flo's work
+\end{itemize}
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \matrix (m1) [row sep=5mm, column sep=5mm]
+    {
+        &
+        \node[coordinate]                           (m00) {};       &
+        \node[coordinate]                           (m01) {};       &
+        \node[coordinate]                           (m02) {};       &
+        \node[dspsquare]                            (m03) {$\sum$}; &
+        \node[coordinate]                           (m04) {};       &
+        \node[coordinate]                           (m05) {};       &
+        \node[dspmixer,dsp/label=above]             (m06) {mag};    \\
+        %------------------------------------------------------------
+        &
+        \node[dspnodeopen,dsp/label=above]          (m10) {adc\_a}; &
+        \node[coordinate]                           (m11) {};       &
+        \node[coordinate]                           (m12) {};       &
+        \node[dspadder]                             (m13) {};       &
+        \node[dspnodefull]                          (m14) {};       &
+        \node[dspnodefull]                          (m15) {};       &
+        \node[dspadder]                             (m16) {};       &
+        \node[coordinate]                           (m17) {};       &
+        \node[coordinate]                           (m18) {};       &
+        \node[dspsquare,label=above:{phase}]        (m19) {$\sum$}; \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m20) {};       &
+        \node[coordinate]                           (m21) {};       &
+        \node[dspsquare]                            (m22) {sw};     &
+        \node[coordinate]                           (m23) {};       &
+        \node[coordinate]                           (m24) {};       &
+        \node[coordinate]                           (m25) {};       &
+        \node[coordinate]                           (m26) {};       &
+        \node[coordinate]                           (m27) {};       &
+        \node[dspsquare]                            (m28) {sw};     &
+        \node[dspsquare]                            (m29) {cordic}; &
+        \node[dspsquare]                            (m210) {\upsamplertext{L}};     &
+        \node[dspsquare]                            (m211) {\downsamplertext{M}};     &
+        \node[coordinate]                           (m212) {};       &
+        \\
+        %------------------------------------------------------------
+        &
+        \node[dspnodeopen,dsp/label=below]          (m30) {adc\_b}; &
+        \node[coordinate]                           (m31) {};       &
+        \node[coordinate]                           (m32) {};       &
+        \node[dspadder]                             (m33) {};       &
+        \node[dspnodefull]                          (m34) {};       &
+        \node[coordinate]                           (m35) {};       &
+        \node[dspadder]                             (m36) {};       &
+        \node[coordinate]                           (m37) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m40) {};       &
+        \node[coordinate]                           (m41) {};       &
+        \node[coordinate]                           (m42) {};       &
+        \node[dspsquare]                            (m43) {$\sum$}; &
+        \node[coordinate]                           (m44) {};       &
+        \node[coordinate]                           (m45) {};       &
+        \node[dspmixer,dsp/label=below]             (m46) {phase};  \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                         (space) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m60) {};       &
+        \node[coordinate]                           (m61) {};       &
+        \node[coordinate]                           (m62) {};       &
+        \node[coordinate]                           (m63) {};       &
+        \node[coordinate]                           (m64) {};       &
+        \node[coordinate]                           (m65) {};       &
+        \node[coordinate]                           (m66) {};       &
+        \node[coordinate]                           (m67) {};       &
+        \node[dspmixer]                             (m68) {};       &
+        \node[coordinate]                           (m69) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m70) {};       &
+        \node[coordinate]                           (m71) {};       &
+        \node[coordinate]                           (m72) {};       &
+        \node[coordinate]                           (m73) {};       &
+        \node[coordinate]                           (m74) {};       &
+        \node[coordinate]                           (m75) {};       &
+        \node[dspnodeopen,dsp/label=below]          (m76) {sample}; &
+        \node[coordinate]                           (m77) {};       &
+        \node[coordinate]                           (m78) {};       &
+        \node[coordinate]                           (m79) {};       &
+        \node[dspsquare]                            (m710) {hb};    &
+        \node[dspsquare]                            (m711) {small\_hb};     &
+        \node[coordinate]                           (m712) {};      \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m80) {};       &
+        \node[coordinate]                           (m81) {};       &
+        \node[coordinate]                           (m82) {};       &
+        \node[coordinate]                           (m83) {};       &
+        \node[coordinate]                           (m84) {};       &
+        \node[coordinate]                           (m85) {};       &
+        \node[coordinate]                           (m86) {};       &
+        \node[coordinate]                           (m87) {};       &
+        \node[dspmixer]                             (m88) {};       &
+        \node[coordinate]                           (m89) {};       \\
+    };
+    \draw[dspconn] (m19) -- (m29);
+    %connections start -> dc offset
+    \foreach \off/\i in {1mm/1,-1mm/3}
+    {
+        \draw[dspflow] (m\i0) -- (m\i1);
+        \draw[dspline] (m\i1) -- ([yshift=\off]m21) -- ([yshift=\off]m22.west);
+        \draw[dspline] ([yshift=\off]m22.east) -- ([yshift=\off]m23);
+        \draw[dspconn] ([yshift=\off]m23) -- (m\i3);
+    }
+    %top connection dc offset -> correction
+    \begin{scope}[start chain]
+        \chainin (m14);
+        \chainin (m04) [join=by dspline];
+        \chainin (m03) [join=by dspconn];
+        \chainin (m13) [join=by dspconn];
+        \chainin (m14) [join=by dspconn];
+        \chainin (m15) [join=by dspconn];
+        \chainin (m05) [join=by dspline];
+        \chainin (m06) [join=by dspconn];
+        \chainin (m16) [join=by dspconn];
+    \end{scope}
+    \draw[dspconn] (m15) -- (m16);
+    \draw[dspline] (m16) -- (m17) -- ([yshift=1mm]m27);
+    %bottom connection dc offset -> correction
+    \begin{scope}[start chain]
+        \chainin (m34);
+        \chainin (m44) [join=by dspline];
+        \chainin (m43) [join=by dspconn];
+        \chainin (m33) [join=by dspconn];
+        \chainin (m34) [join=by dspconn];
+        \chainin (m36) [join=by dspconn];
+        \chainin (m37) [join=by dspline];
+    \end{scope}
+    \draw[dspline] (m37) -- ([yshift=-1mm]m27);
+    \draw[dspline] (m15) -- (m45);
+    \draw[dspconn] (m45) -- (m46) -- (m36);
+    %connection sw -> M
+    \begin{scope}[dspconn]
+        \draw ([yshift=1mm]m28.east) -- node[above] {i} ([yshift=1mm]m29.west);
+        \draw ([yshift=-1mm]m28.east) -- node[below] {q} ([yshift=-1mm]m29.west);
+    \end{scope}
+    \foreach \i [evaluate = \i as \j using int(\i+1),] in {7,9,10}
+    {
+        \begin{scope}[dspconn]
+            \draw ([yshift=1mm]m2\i.east) -- ([yshift=1mm]m2\j.west);
+            \draw ([yshift=-1mm]m2\i.east) -- ([yshift=-1mm]m2\j.west);
+        \end{scope}
+    }
+
+    %connections top row -> bottom row
+    \foreach \off in {1mm,-1mm}
+    {
+        \draw[dspline] ([yshift=\off]m211.east) -- ([yshift=\off,xshift=\off]m212) -- ([yshift=\off,xshift=\off]m712);
+        \draw[dspconn] ([yshift=\off,xshift=\off]m712) -- ([yshift=\off]m711.east);
+    }
+
+    %bottom row right -> left
+    \foreach \i [evaluate = \i as \j using int(\i-1),] in {11}
+    {
+        \begin{scope}[dspconn]
+            \draw ([yshift=1mm]m7\i.west) -- ([yshift=1mm]m7\j.east);
+            \draw ([yshift=-1mm]m7\i.west) -- ([yshift=-1mm]m7\j.east);
+        \end{scope}
+    }
+
+    \foreach \off/\i in {1mm/6,-1mm/8}
+    {
+        \draw[dspline] ([yshift=\off]m710.west) -- ([yshift=\off]m79) -- (m\i9);
+        \draw[dspconn] (m\i9) -- (m\i8);
+        \draw[dspline] (m\i8) -- (m\i7) -- (m77);
+    }
+    \draw[dspflow] (m77) -- (m76.east);
+
+
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m03) (m13) (m14),label=above:{DC offset}] {};
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m43) (m33) (m34),label=below:{DC offset}] {};
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m15) (m06) (m46) (m37),label=above:{correction}] {};
+    \node[draw,inner xsep=10pt,inner ysep=20pt,dashed,fit=(m68) (m88),label=below:{scale}] {};
+\end{tikzpicture}
+    \caption{DSP Rx Path}
+    \label{fig:rxpath}
+\end{figure}
+\begin{itemize}
+    \item ADC 14 Bit
+    \item after DC 18 bit
+    \item after corr 24 bit
+    \item cordic 25 bit
+    \item rest 24 bit
+    \item Round to nearest tith error diffusion
+    \item DSP Core connection points!
+\end{itemize}
 \section{GNU Radio}
+\begin{itemize}
+    \item c++/python/grc
+    \item volk init
+    \item rx.grc tx.grc
+    \item modified python versions (DC offset!)
+\end{itemize}
 \chapter{Measurement Setup}
 \section{GNU Radio}
+See rx/tx grc
 \section{Matlab}
+\begin{itemize}
+    \item describe rx/tx
+    \item describe measurement classes
+    \item why not measurement toolbox?
+\end{itemize}
 \section{Meters}
+\begin{itemize}
+    \item R\&S SMBV 100a
+    \item R\&S SMIQ06B \& Agilent E85810 GPIB
+    \item R\&S ZVL
+    \item Agilent N1914A (Power head!)
+\end{itemize}
 \chapter{Measurement Results}
 \section{RF Frequency Response}
-
 \subsection{RX}
+\begin{itemize}
+    \item Setup (smbv -> cable -> usrp)
+    \item 1MHz offset (dc!)
+\end{itemize}
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title=Input power needed for full scale,
         legend pos = outer north east,
         legend style={font=\footnotesize},
         xlabel={gain},
@@ -115,11 +341,13 @@ bookmarksopen=false
         \legend{\SI{400}{MHz},\SI{2.4}{GHz},\SI{4.4}{GHz}}
     \end{axis}
 \end{tikzpicture}
-
-
+    \caption{Input power needed for full scale}
+    \label{fig:inputfscrf}
+\end{figure}
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title=Input power needed for full scale,
         legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={gain},
@@ -139,11 +367,22 @@ bookmarksopen=false
         \legend{\SI{0}{dBm},\SI{15}{dBm},\SI{30}{dBm}}
     \end{axis}
 \end{tikzpicture}
+    \caption{Gain needed for fullscale}
+    \label{fig:gainfscrf}
+\end{figure}
+\begin{itemize}
+    \item describe the drop from 400 -> 4.4Ghz (caused by amps)
+    \item 31.5dB max
+\end{itemize}
 \subsection{TX}
-16dB
+\begin{itemize}
+    \item usrp -> 16dB att (10dB + 6 dB) -> pwr meter
+    \item measured cable
+\end{itemize}
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title={Output power, 0.8fsc},
         legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={gain},
@@ -166,11 +405,13 @@ bookmarksopen=false
         \legend{\SI{0}{dBm},\SI{10}{dBm},\SI{20}{dBm},\SI{30}{dBm},\SI{31.5}{dBm}}
     \end{axis}
 \end{tikzpicture}
-
-
+    \caption{Output power, 0.8fsc}
+    \label{fig:outputrf08}
+\end{figure}
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title={Output power, 1fsc},
         legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={gain},
@@ -193,12 +434,21 @@ bookmarksopen=false
         \legend{\SI{0}{dBm},\SI{10}{dBm},\SI{20}{dBm},\SI{30}{dBm},\SI{31.5}{dBm}}
     \end{axis}
 \end{tikzpicture}
-
+    \caption{Output power, 1fsc}
+    \label{fig:outputrf1}
+\end{figure}
+\begin{itemize}
+    \item describe where stuff is comming from
+\end{itemize}
 \section{IF Frequency Response}
 \subsection{TX}
+\begin{itemize}
+    \item 8Bit vs 16 Bit
+\end{itemize}
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title={IF TX 16 Bit gain 15.0},
         ylabel={if frequency},
         xlabel={rf frequency},
         zlabel={output power},
@@ -219,10 +469,14 @@ bookmarksopen=false
         \addplot3[surf,mesh/cols=41] table {data/if/tx/mesh16_15.0};
     \end{axis}
 \end{tikzpicture}
+    \caption{RF/IF TX, 16 Bit, \SI{15.0}{\deci\bel} gain}
+    \label{fig:rfiftx16}
+\end{figure}
 
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title={IF TX gain 15.0 rf 2GHz},
         legend pos = outer north east,
         xlabel={if frequency},
         ylabel={output power},
@@ -259,12 +513,21 @@ bookmarksopen=false
         \addplot[mark = star] table {data/if/tx/8_2000_15.0};
     \end{axis}
 \end{tikzpicture}
+    \caption{IF TX, \SI{15.0}{\deci\bel} gain, cfreq \SI{2}{\giga\hertz}}
+    \label{fig:iftx}
+\end{figure}
 
 \section{Intermodulation Properties}
 \subsection{RX}
+\begin{itemize}
+    \item SMBV - usrp did not work (seen IM caused by ADC in SMBV;)
+    \item SMBV 10db dcblock - SMIQ 10db dcblock - pwr splitter - usrp
+    \item probably caused by ADC
+\end{itemize}
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title={IP3 RX},
         legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={$L_a$},
@@ -284,11 +547,18 @@ bookmarksopen=false
         \legend{$L_a$,$L_{IM3}$,$IM3$}
     \end{axis}
 \end{tikzpicture}
+    \caption{RX IP3}
+    \label{fig:rxip3}
+\end{figure}
 \subsection{TX}
-10dB
+\begin{itemize}
+    \item usrp - 10dB att - zvl
+    \item gain stepping did not work; nor stepping zvl -> probably caused by ADC
+\end{itemize}
+\begin{figure}[htb]
+    \centering
 \begin{tikzpicture}
     \begin{axis}[
-        title={IP3 TX},
         legend pos = outer north east,
         legend style={font=\footnotesize},
         ylabel={$L_a$},
@@ -308,7 +578,9 @@ bookmarksopen=false
         \legend{$L_a$,$L_{IM3}$,$IM3$}
     \end{axis}
 \end{tikzpicture}
+    \caption{TX IP3}
+    \label{fig:txip3}
+\end{figure}
 
-tx: 10db dcblock power splitter
 
 \end{document}
