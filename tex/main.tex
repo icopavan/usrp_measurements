@@ -111,19 +111,26 @@ bookmarksopen=false
         \node[dspsquare]                            (m03) {$\sum$}; &
         \node[coordinate]                           (m04) {};       &
         \node[coordinate]                           (m05) {};       &
-        \node[dspmixer,dsp/label=above]             (m06) {mag};    \\
+        \node[dspmixer]                             (m06) {};       &
+        \node                                       (m07) {mag};    &
+        \node[coordinate]                           (m08) {};       &
+        \node                                       (m09) {phase};  \\
         %------------------------------------------------------------
         &
         \node[dspnodeopen,dsp/label=above]          (m10) {adc\_a}; &
         \node[coordinate]                           (m11) {};       &
         \node[coordinate]                           (m12) {};       &
-        \node[dspadder]                             (m13) {};       &
+        \node[dspadder,label=100:{-}]               (m13) {};      &
         \node[dspnodefull]                          (m14) {};       &
         \node[dspnodefull]                          (m15) {};       &
         \node[dspadder]                             (m16) {};       &
         \node[coordinate]                           (m17) {};       &
         \node[coordinate]                           (m18) {};       &
-        \node[dspsquare,label=above:{phase}]        (m19) {$\sum$}; \\
+        \node[dspsquare]                            (m19) {$\sum$}; &
+        \node[coordinate]                           (m110){};       &
+        \node[dspsquare]                            (m111){CIC};    &
+        \node[coordinate]                           (m112) {};      \\
+
         %------------------------------------------------------------
         &
         \node[coordinate]                           (m20) {};       &
@@ -136,20 +143,25 @@ bookmarksopen=false
         \node[coordinate]                           (m27) {};       &
         \node[dspsquare]                            (m28) {sw};     &
         \node[dspsquare]                            (m29) {cordic}; &
-        \node[dspsquare]                            (m210) {\upsamplertext{L}};     &
-        \node[dspsquare]                            (m211) {\downsamplertext{M}};     &
-        \node[coordinate]                           (m212) {};       &
+        \node[coordinate]                           (m210) {};   &
+        \node[coordinate]                           (m211) {};      &
+        \node[coordinate]                           (m212) {};      &
         \\
         %------------------------------------------------------------
         &
         \node[dspnodeopen,dsp/label=below]          (m30) {adc\_b}; &
         \node[coordinate]                           (m31) {};       &
         \node[coordinate]                           (m32) {};       &
-        \node[dspadder]                             (m33) {};       &
+        \node[dspadder,label=-100:{-}]              (m33) {};       &
         \node[dspnodefull]                          (m34) {};       &
         \node[coordinate]                           (m35) {};       &
         \node[dspadder]                             (m36) {};       &
-        \node[coordinate]                           (m37) {};       \\
+        \node[coordinate]                           (m37) {};       &
+        \node[coordinate]                           (m38) {};       &
+        \node[coordinate]                           (m39) {};       &
+        \node[coordinate]                           (m310){};       &
+        \node[dspsquare]                            (m311){CIC};    &
+        \node[coordinate]                           (m312) {};      \\
         %------------------------------------------------------------
         &
         \node[coordinate]                           (m40) {};       &
@@ -158,7 +170,8 @@ bookmarksopen=false
         \node[dspsquare]                            (m43) {$\sum$}; &
         \node[coordinate]                           (m44) {};       &
         \node[coordinate]                           (m45) {};       &
-        \node[dspmixer,dsp/label=below]             (m46) {phase};  \\
+        \node[dspmixer,dsp/label=below]             (m46) {};       &
+        \node                                       (m47) {phase};  \\
         %------------------------------------------------------------
         &
         \node[coordinate]                         (space) {};       \\
@@ -172,8 +185,11 @@ bookmarksopen=false
         \node[coordinate]                           (m65) {};       &
         \node[coordinate]                           (m66) {};       &
         \node[coordinate]                           (m67) {};       &
-        \node[dspmixer]                             (m68) {};       &
-        \node[coordinate]                           (m69) {};       \\
+        \node[coordinate]                           (m68) {};       &
+        \node[dspmixer]                             (m69) {};       &
+        \node[dspsquare]                            (m610) {hb};    &
+        \node[dspsquare]                            (m611) {small\_hb}; &
+        \node[coordinate]                           (m612) {};      \\
         %------------------------------------------------------------
         &
         \node[coordinate]                           (m70) {};       &
@@ -182,12 +198,12 @@ bookmarksopen=false
         \node[coordinate]                           (m73) {};       &
         \node[coordinate]                           (m74) {};       &
         \node[coordinate]                           (m75) {};       &
-        \node[dspnodeopen,dsp/label=below]          (m76) {sample}; &
-        \node[coordinate]                           (m77) {};       &
+        \node[coordinate]                           (m76) {};       &
+        \node[dspnodeopen,dsp/label=below]          (m77) {sample}; &
         \node[coordinate]                           (m78) {};       &
-        \node[coordinate]                           (m79) {};       &
-        \node[dspsquare]                            (m710) {hb};    &
-        \node[dspsquare]                            (m711) {small\_hb};     &
+        \node                                       (m79) {scale};  &
+        \node[coordinate]                           (m710) {};      &
+        \node[coordinate]                           (m711) {};      &
         \node[coordinate]                           (m712) {};      \\
         %------------------------------------------------------------
         &
@@ -199,9 +215,13 @@ bookmarksopen=false
         \node[coordinate]                           (m85) {};       &
         \node[coordinate]                           (m86) {};       &
         \node[coordinate]                           (m87) {};       &
-        \node[dspmixer]                             (m88) {};       &
-        \node[coordinate]                           (m89) {};       \\
+        \node[coordinate]                           (m88) {};       &
+        \node[dspmixer]                             (m89) {};       &
+        \node[dspsquare]                            (m810) {hb};    &
+        \node[dspsquare]                            (m811) {small\_hb};     &
+        \node[coordinate]                           (m812) {};      \\
     };
+    \draw[dspline] (m09) -- (m19);
     \draw[dspconn] (m19) -- (m29);
     %connections start -> dc offset
     \foreach \off/\i in {1mm/1,-1mm/3}
@@ -238,48 +258,33 @@ bookmarksopen=false
     \draw[dspline] (m37) -- ([yshift=-1mm]m27);
     \draw[dspline] (m15) -- (m45);
     \draw[dspconn] (m45) -- (m46) -- (m36);
-    %connection sw -> M
+    \foreach \i in {0,4}
+    {
+        \draw[dspline] (m\i6) -- (m\i7);
+    }
+    %connection sw -> CIC
     \begin{scope}[dspconn]
         \draw ([yshift=1mm]m28.east) -- node[above] {i} ([yshift=1mm]m29.west);
         \draw ([yshift=-1mm]m28.east) -- node[below] {q} ([yshift=-1mm]m29.west);
     \end{scope}
-    \foreach \i [evaluate = \i as \j using int(\i+1),] in {7,9,10}
-    {
-        \begin{scope}[dspconn]
-            \draw ([yshift=1mm]m2\i.east) -- ([yshift=1mm]m2\j.west);
-            \draw ([yshift=-1mm]m2\i.east) -- ([yshift=-1mm]m2\j.west);
-        \end{scope}
-    }
+    
 
-    %connections top row -> bottom row
-    \foreach \off in {1mm,-1mm}
+    \foreach \off/\i/\j in {1mm/1/6,-1mm/3/8}
     {
-        \draw[dspline] ([yshift=\off]m211.east) -- ([yshift=\off,xshift=\off]m212) -- ([yshift=\off,xshift=\off]m712);
-        \draw[dspconn] ([yshift=\off,xshift=\off]m712) -- ([yshift=\off]m711.east);
+        \draw[dspconn] ([yshift=\off]m27) -- ([yshift=\off]m28.west);
+        \draw[dspline] ([yshift=\off]m29.east) -- ([yshift=\off]m210) -- (m\i10);
+        \draw[dspconn] (m\i10) -- (m\i11);
+        \draw[dspline] (m\i11) -- ([xshift=\off]m\i12) -- ([xshift=\off]m\j12);
+        \draw[dspconn] ([xshift=\off]m\j12) -- (m\j11);
+        \draw[dspconn] (m\j11) -- (m\j10);
+        \draw[dspconn] (m\j10) -- (m\j9);
+        \draw[dspline] (m79) -- (m\j9) -- (m\j8) -- (m78);
     }
-
-    %bottom row right -> left
-    \foreach \i [evaluate = \i as \j using int(\i-1),] in {11}
-    {
-        \begin{scope}[dspconn]
-            \draw ([yshift=1mm]m7\i.west) -- ([yshift=1mm]m7\j.east);
-            \draw ([yshift=-1mm]m7\i.west) -- ([yshift=-1mm]m7\j.east);
-        \end{scope}
-    }
-
-    \foreach \off/\i in {1mm/6,-1mm/8}
-    {
-        \draw[dspline] ([yshift=\off]m710.west) -- ([yshift=\off]m79) -- (m\i9);
-        \draw[dspconn] (m\i9) -- (m\i8);
-        \draw[dspline] (m\i8) -- (m\i7) -- (m77);
-    }
-    \draw[dspflow] (m77) -- (m76.east);
+    \draw[dspflow] (m78) -- (m77);
 
 
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m03) (m13) (m14),label=above:{DC offset}] {};
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m43) (m33) (m34),label=below:{DC offset}] {};
-    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m15) (m06) (m46) (m37),label=above:{correction}] {};
-    \node[draw,inner xsep=10pt,inner ysep=20pt,dashed,fit=(m68) (m88),label=below:{scale}] {};
 \end{tikzpicture}
     \caption{DSP Rx Path}
     \label{fig:rxpath}
@@ -290,6 +295,7 @@ bookmarksopen=false
     \item after corr 24 bit
     \item cordic 25 bit
     \item rest 24 bit
+    \item 4 Stage CIC
     \item Round to nearest tith error diffusion
     \item DSP Core connection points!
 \end{itemize}
