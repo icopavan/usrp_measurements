@@ -285,6 +285,7 @@ bookmarksopen=false
 
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m03) (m13) (m14),label=above:{DC offset}] {};
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m43) (m33) (m34),label=below:{DC offset}] {};
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m45) (m07),label=below:{IQ Balance}] {};
 \end{tikzpicture}
     \caption{DSP Rx Path}
     \label{fig:rxpath}
@@ -297,6 +298,162 @@ bookmarksopen=false
     \item rest 24 bit
     \item 4 Stage CIC
     \item Round to nearest tith error diffusion
+    \item DSP Core connection points!
+\end{itemize}
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \matrix (m1) [row sep=5mm, column sep=5mm]
+    {
+        &
+        \node[coordinate]                           (ma0) {};       &
+        \node[coordinate]                           (ma1) {};       &
+        \node[coordinate]                           (ma2) {};       &
+        \node[coordinate]                           (ma3) {};       &
+        \node[coordinate]                           (ma4) {};       &
+        \node[coordinate]                           (ma5) {};       &
+        \node                                       (ma6) {phase};  \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m00) {};       &
+        \node[coordinate]                           (m01) {};       &
+        \node[dspsquare]                            (m02) {hb};     &
+        \node[dspsquare]                            (m03) {small\_hb}; &
+        \node[dspsquare]                            (m04) {CIC};    &
+        \node[coordinate]                           (m05) {};       &
+        \node[dspsquare]                            (m06) {$\sum$}; &
+        \node[coordinate]                           (m07) {};       &
+        \node[dspmixer]                             (m08) {};       &
+        \node[coordinate]                           (m09) {};       \\
+        %------------------------------------------------------------
+        \node[text width=4ex] {}; &
+        \node[dspnodeopen,dsp/label=left]           (m10) {sample}; &
+        \node[coordinate]                           (m11) {};       &
+        \node[coordinate]                           (m12) {};       &
+        \node[coordinate]                           (m13) {};       &
+        \node[coordinate]                           (m14) {};       &
+        \node[coordinate]                           (m15) {};       &
+        \node[dspsquare]                            (m16) {cordic}; &
+        \node[coordinate]                           (m17) {};       &
+        \node                                       (m18) {scale};  &
+        \node[coordinate]                           (m19) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m20) {};       &
+        \node[coordinate]                           (m21) {};       &
+        \node[dspsquare]                            (m22) {hb};     &
+        \node[dspsquare]                            (m23) {small\_hb}; &
+        \node[dspsquare]                            (m24) {CIC};     &
+        \node[coordinate]                           (m25) {};       &
+        \node[coordinate]                           (m26) {};       &
+        \node[coordinate]                           (m27) {};       &
+        \node[dspmixer]                             (m28) {};       &
+        \node[coordinate]                           (m29) {};       \\
+        %------------------------------------------------------------
+        \node[coordinate]                           (space) {};     \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m30) {};       &
+        \node[coordinate]                           (m31) {};       &
+        \node[coordinate]                           (m32) {};       &
+        \node[coordinate]                           (m33) {};       &
+        \node[coordinate]                           (m34) {};       &
+        \node[coordinate]                           (m35) {};       &
+        \node                                       (m36) {i\_dco}; &
+        \node                                       (m37) {mag};    &
+        \node[dspmixer]                             (m38) {};       &
+        \node[xshift=1mm,dspnodefull]               (m39) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m40) {};       &
+        \node[coordinate]                           (m41) {};       &
+        \node[dspnodeopen,dsp/label=above]          (m42) {adc\_a}; &
+        \node[coordinate]                           (m43) {};       &
+        \node[coordinate]                           (m44) {};       &
+        \node[coordinate]                           (m45) {};       &
+        \node[dspadder]                             (m46) {};       &
+        \node[coordinate]                           (m47) {};       &
+        \node[dspadder]                             (m48) {};       &
+        \node[xshift=1mm,dspnodefull]               (m49) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m50) {};       &
+        \node[coordinate]                           (m51) {};       &
+        \node[coordinate]                           (m52) {};       &
+        \node[coordinate]                           (m53) {};       &
+        \node[dspsquare]                            (m54) {sw};     &
+        \node[coordinate]                           (m55) {};       &
+        \node[coordinate]                           (m56) {};       &
+        \node[coordinate]                           (m57) {};       &
+        \node[coordinate]                           (m58) {};       &
+        \node[coordinate]                           (m59) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m60) {};       &
+        \node[coordinate]                           (m61) {};       &
+        \node[dspnodeopen,dsp/label=above]          (m62) {adc\_b}; &
+        \node[coordinate]                           (m63) {};       &
+        \node[coordinate]                           (m64) {};       &
+        \node[coordinate]                           (m65) {};       &
+        \node[dspadder]                             (m66) {};       &
+        \node[coordinate]                           (m67) {};       &
+        \node[dspadder]                             (m68) {};       &
+        \node[coordinate]                           (m69) {};       \\
+        %------------------------------------------------------------
+        &
+        \node[coordinate]                           (m70) {};       &
+        \node[coordinate]                           (m71) {};       &
+        \node[coordinate]                           (m72) {};       &
+        \node[coordinate]                           (m73) {};       &
+        \node[coordinate]                           (m74) {};       &
+        \node[coordinate]                           (m75) {};       &
+        \node                                       (m76) {q\_dco}; &
+        \node                                       (m77) {phase};  &
+        \node[dspmixer]                             (m78) {};       &
+        \node[coordinate]                           (m79) {};       \\
+    };
+    \draw[dspflow] (m10) -- (m11);
+    \draw[dspline] (ma6) -- (m06);
+    \draw[dspconn] (m06) -- (m16);
+    \foreach \off/\i/\j/\k in {1mm/0/3/4,-1mm/2/7/6}
+    {
+        \begin{scope}[start chain]
+            \chainin (m11);
+            \chainin (m\i1) [join=by dspline];
+            \chainin (m\i2) [join=by dspline];
+            \chainin (m\i3) [join=by dspconn];
+            \chainin (m\i4) [join=by dspconn];
+            \chainin (m\i5) [join=by dspline];
+        \end{scope}
+        \draw[dspline] (m\i5) -- ([yshift=\off]m15);
+        \draw[dspconn] ([yshift=\off]m15) -- ([yshift=\off]m16.west);
+        \draw[dspline] ([yshift=\off]m16.east) -- ([yshift=\off]m17);
+        \draw[dspline] ([yshift=\off]m16.east) -- ([yshift=\off]m17) -- (m\i7);
+        \draw[dspconn] (m\i7) -- (m\i8);
+        \draw[dspline] (m18) -- (m\i8) -- ([xshift=\off]m\i9) -- ([xshift=\off]m\k9);
+        \draw[dspconn] ([xshift=\off]m\k9) -- (m\k8);
+        \draw[dspconn] (m\k8) -- (m\k6);
+        \draw[dspline] (m\j6) -- (m\k6) -- (m\k5) -- ([yshift=\off]m55);
+        \draw[dspconn] ([yshift=\off]m55) -- ([yshift=\off]m54.east);
+        \draw[dspline] ([yshift=\off]m54.west) -- ([yshift=\off]m53) -- (m\k3);
+        \draw[dspflow] (m\k3) -- (m\k2);
+
+        \draw[dspline] (m\j7) -- (m\j8);
+        \draw[dspconn] (m\j8) -- (m\k8);
+
+        \draw[dspconn] ([xshift=1mm]m\j9) -- (m\j8);
+    }
+    \draw[dspline] ([xshift=1mm]m49) -- ([xshift=1mm]m79);
+
+
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m77) (m39),label=below:{IQ Balance}] {};
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m36) (m76),label=below:{DC Offset}] {};
+\end{tikzpicture}
+    \caption{DSP TX Path}
+    \label{fig:txpath}
+\end{figure}
+\begin{itemize}
+    \item adc\_a, adc\_b can be switched off
     \item DSP Core connection points!
 \end{itemize}
 \section{GNU Radio}
