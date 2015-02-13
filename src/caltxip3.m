@@ -15,7 +15,7 @@ now = datestr(date);
 mkdir(now);
 savefile = strcat(now, '/caltx_ip3.mat');
 
-load('29-Jan-2015/tx_ip3.mat', 'phs');
+load('13-Feb-2015/tx_ip3.mat', 'phs');
 
 f = (-(num-1)/2 : (num-1)/2) * df;
 t = (0 : 2*fsample/df-1) / fsample;
@@ -33,7 +33,7 @@ ampls = logspace(start, stop, N);
 pwr = PWR('128.131.85.239');
 pwr.freq = cfreq;
 
-for i = 1:N;
+i = 15;
     for j = 1:nsig
         for k = 1:Nmeas;
             status = 1;
@@ -49,7 +49,6 @@ for i = 1:N;
         end
     end
     sendmail(email, sprintf('Messung cal tx IP3 %d', i), 'blubb', {savefile});
-end
 
 sendmail(email, 'Messung cal tx IP3 DONE', 'blubb', {savefile});
 

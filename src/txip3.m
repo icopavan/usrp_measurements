@@ -1,6 +1,6 @@
 fsample = 25e6;
 wire = 16;
-gain = 10;
+gain = 20;
 cfreq = 2e9;
 N = 20;
 start = -1;
@@ -30,9 +30,8 @@ delete(zvl);
 zvl = ZVL('128.131.85.230');
 zvl.cfreq = cfreq;
 zvl.span = 5e6;
-zvl.ref = 5;
+zvl.ref = -5;
 zvl.rbw = 100e3;
-zvl.att = 10;
 zvl.display = 'ON';
 zvl.points = 1001;
 zvl.avg_cnt = 50;

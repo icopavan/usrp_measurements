@@ -1,6 +1,6 @@
 ampl = 0.7;
 gains = [0 15 31.5];
-cfreqs = (400:100:4400)*1e6;
+cfreqs = ((400:100:4400)+1)*1e6;
 Nsample = 5;
 
 res = zeros(length(gains), length(cfreqs), Nsample);
@@ -24,13 +24,13 @@ for i = 1:length(gains)
         pow.freq = cfreqs(j);
         tic
         for k = 1:Nsample
-            fprintf(1, 'gain: %gdB pow: %gdBm cf: %4.1fMHz 8Bit (%d): ', gains(i), out, cfreqs(j)/1e6, k);
+            fprintf(1, 'gain: %gdB pow: %gdBm cf: %4.1fMHz (%d): ', gains(i), out, cfreqs(j)/1e6, k);
             y = pow.pow;
             fprintf(1, '%gdBm\n', y);
             res(i, j , k) = y;
             save(savefile, 'ampl', 'gains', 'cfreqs', 'res');
         end
-        sendmail(email, sprintf('Messung RXIF cal gain: %gdB pow: %gdBm cf: %4dMHz 8Bit', gains(i), out, cfreqs(j)/1e6), 'fertig!', {savefile});
+%        sendmail(email, sprintf('Messung RXIF cal gain: %gdB pow: %gdBm cf: %4dMHz 8Bit', gains(i), out, cfreqs(j)/1e6), 'fertig!', {savefile});
         toc
     end
 end
