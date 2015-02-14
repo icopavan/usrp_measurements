@@ -715,7 +715,7 @@ See rx/tx grc
 \end{figure}
 \subsection{TX}
 \begin{itemize}
-    \item usrp - 10dB att - zvl
+    \item usrp - 16dB att - zvl
     \item gain stepping did not work; nor stepping zvl -> probably caused by ADC
 \end{itemize}
 \begin{figure}[htb]
@@ -736,8 +736,8 @@ See rx/tx grc
         \addplot[only marks, mark = +] table {data/ip3/tx/la};
         \addplot[only marks, mark = x] table {data/ip3/tx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/tx/pim3};
-        \addplot[domain = -22:13, samples = 201,dotted] {0.9911*x-10.8085};
-        \addplot[domain = -22:13, samples = 201,dotted] {3.3325*x-39.1148};
+        \addplot[domain = -27:17, samples = 201,dotted] {0.9951*x-4.3113};
+        \addplot[domain = -27:17, samples = 201,dotted] {3.0347*x-33.2647};
         \legend{$L_a$,$L_{IM3}$,$IM3$}
     \end{axis}
 \end{tikzpicture}
