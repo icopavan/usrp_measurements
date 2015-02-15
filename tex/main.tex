@@ -549,9 +549,9 @@ See rx/tx grc
     \begin{axis}[
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={gain},
+        ylabel={power},
         xlabel={frequency},
-        y unit={\deci\bel},
+        y unit={\deci\belm},
         x unit={\hertz},
         change x base,
         x SI prefix=giga,
@@ -564,9 +564,9 @@ See rx/tx grc
         \addplot[mark = +] table {data/rf/tx/0.8/0.0};
         \addplot[mark = x] table {data/rf/tx/0.8/10.0};
         \addplot[mark = asterisk] table {data/rf/tx/0.8/20.0};
-        \addplot[mark = star] table {data/rf/tx/0.8/30.0};
+        \addplot[mark = triangle] table {data/rf/tx/0.8/30.0};
         \addplot[mark = 10-pointed star] table {data/rf/tx/0.8/31.5};
-        \legend{\SI{0}{dBm},\SI{10}{dBm},\SI{20}{dBm},\SI{30}{dBm},\SI{31.5}{dBm}}
+        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
     \end{axis}
 \end{tikzpicture}
     \caption{Output power, 0.8fsc}
@@ -578,9 +578,9 @@ See rx/tx grc
     \begin{axis}[
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={gain},
+        ylabel={power},
         xlabel={frequency},
-        y unit={\deci\bel},
+        y unit={\deci\belm},
         x unit={\hertz},
         change x base,
         x SI prefix=giga,
@@ -593,9 +593,9 @@ See rx/tx grc
         \addplot[mark = +] table {data/rf/tx/1.0/0.0};
         \addplot[mark = x] table {data/rf/tx/1.0/10.0};
         \addplot[mark = asterisk] table {data/rf/tx/1.0/20.0};
-        \addplot[mark = star] table {data/rf/tx/1.0/30.0};
+        \addplot[mark = triangle] table {data/rf/tx/1.0/30.0};
         \addplot[mark = 10-pointed star] table {data/rf/tx/1.0/31.5};
-        \legend{\SI{0}{dBm},\SI{10}{dBm},\SI{20}{dBm},\SI{30}{dBm},\SI{31.5}{dBm}}
+        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
     \end{axis}
 \end{tikzpicture}
     \caption{Output power, 1fsc}
