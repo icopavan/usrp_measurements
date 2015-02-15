@@ -1,14 +1,12 @@
 load('13-Jan-2015/rx_ip3.mat');
 
-X = pows';
-La = log10(mean(10.^res(:,:,2), 2)) - gain;
-LIM3 = log10(mean(10.^res(:,:,4), 2)) - gain;
+dbfs = mag2db(2^(wire-1)-1);
+
+La = pow2db(mean(db2pow(res(:,:,2) - gain), 2)) - dbfs;
+LIM3 = pow2db(mean(db2pow(res(:,:,4) - gain), 2)) - dbfs;
 
 load('14-Jan-2015/calrx_ip3.mat');
-realLa = log10(mean(10.^ressmbv, 2));
-X = realLa;
-%LIM3 = LIM3 - mErr;
-%La = realLa;
+X = pow2db(mean(db2pow(ressmbv-gain), 2));
 
 
 basedir = '../tex/data/ip3/rx/';
@@ -18,10 +16,13 @@ mkdir(basedir);
 dlmwrite(sprintf('%sla', basedir), [X La], 'delimiter', '\t');
 dlmwrite(sprintf('%sim3', basedir), [X LIM3], 'delimiter', '\t');
 
-pLa = polyfit(X(1:end), La(1:end), 1)
-pLIM3 = polyfit(X(end-4:end-1), LIM3(end-4:end-1), 1)
+f1 = fit(X(end-4:end-1), La(end-4:end-1), 'x+a', 'Start', 0);
+pLa = [1 f1.a]
+f2 = fit(X(end-4:end-1), LIM3(end-4:end-1), '3*x+a', 'Start', 0);
+pLIM3 = [3 f2.a]
 
-pX = linspace(-60, -5);
+
+pX = linspace(-95, -35);
 
 yLa = polyval(pLa, pX);
 yLIM3 = polyval(pLIM3, pX);

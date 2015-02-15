@@ -44,6 +44,7 @@ bookmarksopen=false
 \tikzsetexternalprefix{figures/}
 
 \DeclareSIUnit \belm {Bm}
+\DeclareSIUnit \belfs {BFS}
 
 \begin{document}
 \begin{titlepage}
@@ -693,9 +694,9 @@ See rx/tx grc
     \begin{axis}[
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={$L_a$},
-        xlabel={$L_e$},
-        y unit={\deci\bel},
+        ylabel={output power},
+        xlabel={input power},
+        y unit={\deci\belfs},
         x unit={\deci\belm},
         width=12cm,
         height=5cm,
@@ -705,9 +706,9 @@ See rx/tx grc
         \addplot[only marks, mark = +] table {data/ip3/rx/la};
         \addplot[only marks, mark = x] table {data/ip3/rx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/rx/pim3};
-        \addplot[domain = -62:-8, samples = 201, dotted] {0.9117*x+88.0799};
-        \addplot[domain = -62:-8, samples = 201, dotted] {3.0918*x+110.8365};
-        \legend{$L_a$,$L_{IM3}$,$IM3$}
+        \addplot[domain = -93:-35, samples = 201, dashed] {1*x+33.0765};
+        \addplot[domain = -93:-35, samples = 201, dotted] {3*x+111.2541};
+        \legend{out,$IM$,$IM_3$}
     \end{axis}
 \end{tikzpicture}
     \caption{RX IP3}
@@ -724,9 +725,9 @@ See rx/tx grc
     \begin{axis}[
         legend pos = outer north east,
         legend style={font=\footnotesize},
-        ylabel={$L_a$},
-        xlabel={$L_e$},
-        x unit={\deci\bel},
+        ylabel={output power},
+        xlabel={input power},
+        x unit={\deci\belfs},
         y unit={\deci\belm},
         width=12cm,
         height=5cm,
