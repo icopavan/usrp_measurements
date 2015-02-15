@@ -18,8 +18,10 @@ mkdir(basedir);
 dlmwrite(sprintf('%sla', basedir), [X' La'], 'delimiter', '\t');
 dlmwrite(sprintf('%sim3', basedir), [X' LIM3'], 'delimiter', '\t');
 
-pLa = polyfit(X(1:end), La(1:end), 1)
-pLIM3 = polyfit(X(12:end), LIM3(12:end), 1)
+f1 = fit(X(1:end)', La(1:end)', 'x+a', 'Start', 0);
+pLa = [1 f1.a]
+f2 = fit(X(12:end)', LIM3(12:end)', '3*x+a', 'Start', 0);
+pLIM3 = [3 f2.a]
 
 pX = linspace(-30, 20);
 
