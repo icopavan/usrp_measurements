@@ -39,7 +39,7 @@ for i = 1:length(gains)
             end
             ps8(i, j, k) = p;
             ys8(i, j, k) = y;
-            ms8(i, j, k) = y;
+            ms8(i, j, k) = m;
             fprintf(1, '%gdB %g %g\n', p, y, m);
             save(savefile, 'gains', 'cfreqs', 'ifreqs8', 'ifreqs16', 'ys8', 'ys16', 'ps8', 'ps16', 'ys825', 'ps825', 'ms8', 'ms16', 'ms825');
         end

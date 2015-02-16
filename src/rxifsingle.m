@@ -7,7 +7,7 @@ function [ status, p, y, m ] = rxifsingle(fsample, wire, gain, cfreq, ifreq)
         end
     end
     p = pow2db(bandpower(v, fsample, [ifreq-50e3, ifreq+50e3]));
-    m = mean(v);
-    y = sqrt(mean(abs((v-m).^2)));
+    m = mean(abs(v));
+    y = sqrt(mean(abs((v-mean(v)).^2)));
 end
 
