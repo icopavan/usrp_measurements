@@ -1,5 +1,5 @@
 load('04-Dec-2014/kabel_bad.mat');
-delta = log10(mean(10.^ps))+20;
+delta = pow2db(mean(db2pow(ps)))+20;
 
 basedir = '../tex/data/rf/rx/';
 
