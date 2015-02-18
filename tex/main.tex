@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper,parskip=full]{scrreprt}
+\documentclass[12pt,a4paper,parskip=full]{scrartcl}
 
 %display boundaries
 %\usepackage{showframe}
@@ -92,11 +92,24 @@ bookmarksopen=false
 \tableofcontents
 
 \begin{abstract}
-    Abstract could be here
+    The low cost Ettus Research USRP\footnote{Univeral Software Radio Platform} 
+    combined with GNURadio enables implementing cheap and simple radio solutions.
+    This allows rapid prototyping of new radio protocols, easier test setups for
+    lab purposes and even reconstructing old analog communications hardware on a
+    budget. Although Ettus Research provides schematics, source code, and documentation,
+    there is no data available on the RF characteristics of the USRP devices.
 \end{abstract}
 
-\chapter{Introduction}
-\section{Ettus Research USRP N210}
+\section{Introduction}
+Software defined radio systems (SDR) can be operated on a very broad frequency range,
+can be easily adapted to various needs and allow operations which would be
+impossible or very expensive in analog hardware. A SDR consists of specialised
+software, a general purpose computer, and an analog front end with fast
+ADCs/DACs and optionally DSP and mixing capabilities. One of those front ends is
+the Ettus Research USRP N2x0 product family. This family consists of the N200 and
+the N210, which has a bigger FPGA, allowing additional custom DSP code directly
+in the device.
+\subsection{Ettus Research USRP N210}
 \begin{itemize}
     \item Analog in Flo's work
 \end{itemize}
@@ -457,32 +470,32 @@ bookmarksopen=false
     \item adc\_a, adc\_b can be switched off
     \item DSP Core connection points!
 \end{itemize}
-\section{GNU Radio}
+\subsection{GNU Radio}
 \begin{itemize}
     \item c++/python/grc
     \item volk init
     \item rx.grc tx.grc
     \item modified python versions (DC offset!)
 \end{itemize}
-\chapter{Measurement Setup}
-\section{GNU Radio}
+\section{Measurement Setup}
+\subsection{GNU Radio}
 See rx/tx grc
-\section{Matlab}
+\subsection{Matlab}
 \begin{itemize}
     \item describe rx/tx
     \item describe measurement classes
     \item why not measurement toolbox?
 \end{itemize}
-\section{Meters}
+\subsection{Meters}
 \begin{itemize}
     \item R\&S SMBV 100a
     \item R\&S SMIQ06B \& Agilent E85810 GPIB
     \item R\&S ZVL
     \item Agilent N1914A (Power head!)
 \end{itemize}
-\chapter{Measurement Results}
-\section{RF Frequency Response}
-\subsection{RX}
+\section{Measurement Results}
+\subsection{RF Frequency Response}
+\subsubsection{RX}
 \begin{itemize}
     \item Setup (smbv -> cable -> usrp)
     \item 1MHz offset (dc!)
@@ -538,7 +551,7 @@ See rx/tx grc
     \item describe the drop from 400 -> 4.4Ghz (caused by amps)
     \item 31.5dB max
 \end{itemize}
-\subsection{TX}
+\subsubsection{TX}
 \begin{itemize}
     \item usrp -> 16dB att (10dB + 6 dB) -> pwr meter
     \item measured cable
@@ -604,8 +617,8 @@ See rx/tx grc
 \begin{itemize}
     \item describe where stuff is comming from
 \end{itemize}
-\section{IF Frequency Response}
-\subsection{TX}
+\subsection{IF Frequency Response}
+\subsubsection{TX}
 \begin{itemize}
     \item 8Bit vs 16 Bit
 \end{itemize}
@@ -681,8 +694,8 @@ See rx/tx grc
     \label{fig:iftx}
 \end{figure}
 
-\section{Intermodulation Properties}
-\subsection{RX}
+\subsection{Intermodulation Properties}
+\subsubsection{RX}
 \begin{itemize}
     \item SMBV - usrp did not work (seen IM caused by ADC in SMBV;)
     \item SMBV 10db dcblock - SMIQ 10db dcblock - pwr splitter - usrp
@@ -714,7 +727,7 @@ See rx/tx grc
     \caption{RX IP3}
     \label{fig:rxip3}
 \end{figure}
-\subsection{TX}
+\subsubsection{TX}
 \begin{itemize}
     \item usrp - 16dB att - zvl
     \item gain stepping did not work; nor stepping zvl -> probably caused by ADC
