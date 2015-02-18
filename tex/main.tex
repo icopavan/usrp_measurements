@@ -27,7 +27,7 @@ bookmarksopen=false
 
 \usepackage{cleveref}
 
-\usepackage{siunitx}
+\usepackage[binary-units]{siunitx}
 \usepackage{pgfplots}
 
 \pgfplotsset{compat=1.11}
@@ -45,6 +45,8 @@ bookmarksopen=false
 
 \DeclareSIUnit \belm {Bm}
 \DeclareSIUnit \belfs {BFS}
+\DeclareSIUnit \samples {S}
+\sisetup{per-mode = symbol}
 
 \begin{document}
 \begin{titlepage}
@@ -108,13 +110,40 @@ software, a general purpose computer, and an analog front end with fast
 ADCs/DACs and optionally DSP and mixing capabilities. One of those front ends is
 the Ettus Research USRP N2x0 product family. This family consists of the N200 and
 the N210, which has a bigger FPGA, allowing additional custom DSP code directly
-in the device.
-\subsection{Ettus Research USRP N210}
-\begin{itemize}
-    \item Analog in Flo's work
-\end{itemize}
+in the device. Both contain \SI{100}{\mega\samples\per\second} dual ADC,
+\SI{400}{\mega\samples\per\second} dual DAC, Xilinx Spartan
+3A-DSP, and Gigabit Ethernet connectivity to stream data. The analog part needs
+to be provided by one of several possible daughter boards, which allow operation
+from DC to 6 GHz\cite{ettus_n2x0}. This products are also available as rebranded
+versions from NI.
+\subsection{NI USRP-2922}
+The NI USRP-2922 is a rebranded Ettus Research N210 with an SBX daughter board, which
+allows frequency ranges from \SI{400}{\mega\hertz} to \SI{4.4}{\giga\hertz}. Both RX
+and TX feature amplifiers and an attenuator to allow specifying an overall gain from
+\SI{0}{\deci\bel} to \SI{31.5}{\deci\bel} in \SI{0.5}{\deci\bel} steps. Furthermore
+both feature a clock synthesizer to generate the desired frequency from the \SI{100}{\mega\hertz}
+base clock of the FPGA board, mixers and appropriate filtering. Digital to analog and analog to
+digital conversion is handled by the base board at a fixed sampling rate of
+\SI{100}{\mega\samples\per\second}. Samples can be transferred to and from the device via the
+GBit network interface. This limits the maximum sampling rate for \SI{16}{\bit} to
+\SI{25}{\mega\samples\per\second}. A detailed overview can be seen in \ref{fig:usrp}. %TODO wrong filter LP3 LP5; 20MHz?
+\begin{figure}[ht]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[scale=0.5]{overall}
+    \end{minipage}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[scale=0.5]{sbx}
+    \end{minipage}
+    \caption{Overview of the hardware on the N210 circuit board and SBX ciruit board\cite{flo}.}
+    \label{fig:usrp}
+\end{figure}
+Digital down conversion
 \begin{figure}[htb]
     \centering
+\resizebox{10cm}{!}{
 \begin{tikzpicture}
     \matrix (m1) [row sep=5mm, column sep=5mm]
     {
@@ -300,7 +329,7 @@ in the device.
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m03) (m13) (m14),label=above:{DC offset}] {};
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m43) (m33) (m34),label=below:{DC offset}] {};
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m45) (m07),label=below:{IQ Balance}] {};
-\end{tikzpicture}
+\end{tikzpicture}}
     \caption{DSP Rx Path}
     \label{fig:rxpath}
 \end{figure}
@@ -759,5 +788,7 @@ See rx/tx grc
     \label{fig:txip3}
 \end{figure}
 
+\bibliographystyle{plain}
+\bibliography{literature}
 
 \end{document}
