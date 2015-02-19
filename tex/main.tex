@@ -148,6 +148,15 @@ Digital down conversion
     \matrix (m1) [row sep=5mm, column sep=5mm,ampersand replacement=\&]
     {
         \&
+        \node[coordinate]                           (ma0) {};       \&
+        \node[coordinate]                           (ma1) {};       \&
+        \node[coordinate]                           (ma2) {};       \&
+        \node[coordinate]                           (ma3) {};       \&
+        \node[coordinate]                           (ma4) {};       \&
+        \node[coordinate]                           (ma5) {};       \&
+        \node                                       (ma6) {mag};    \\
+        %------------------------------------------------------------
+        \&
         \node[coordinate]                           (m00) {};       \&
         \node[coordinate]                           (m01) {};       \&
         \node[coordinate]                           (m02) {};       \&
@@ -155,7 +164,7 @@ Digital down conversion
         \node[coordinate]                           (m04) {};       \&
         \node[coordinate]                           (m05) {};       \&
         \node[dspmixer]                             (m06) {};       \&
-        \node                                       (m07) {mag};    \&
+        \node[coordinate]                           (m07) {};       \&
         \node[coordinate]                           (m08) {};       \&
         \node                                       (m09) {phase};  \\
         %------------------------------------------------------------
@@ -224,8 +233,16 @@ Digital down conversion
         \node[dspsquare]                            (m43) {$\sum$}; \&
         \node[coordinate]                           (m44) {};       \&
         \node[coordinate]                           (m45) {};       \&
-        \node[dspmixer,dsp/label=below]             (m46) {};       \&
-        \node                                       (m47) {phase};  \\
+        \node[dspmixer]                             (m46) {};       \\
+        %------------------------------------------------------------
+        \&
+        \node[coordinate]                           (mb0) {};       \&
+        \node[coordinate]                           (mb1) {};       \&
+        \node[coordinate]                           (mb2) {};       \&
+        \node[coordinate]                           (mb3) {};       \&
+        \node[coordinate]                           (mb4) {};       \&
+        \node[coordinate]                           (mb5) {};       \&
+        \node                                       (mb6) {phase};  \\
     };
     \draw[dspline] (m09) -- (m19);
     \draw[dspconn] (m19) -- (m29);
@@ -264,10 +281,8 @@ Digital down conversion
     \draw[dspline] (m37) -- ([yshift=-1mm]m27);
     \draw[dspline] (m15) -- (m45);
     \draw[dspconn] (m45) -- (m46) -- (m36);
-    \foreach \i in {0,4}
-    {
-        \draw[dspline] (m\i6) -- (m\i7);
-    }
+    \draw[dspline] (ma6) -- (m06);
+    \draw[dspline] (mb6) -- (m46);
     %connection sw -> CIC
     \begin{scope}[dspconn]
         \draw ([yshift=1mm]m28.east) -- node[above] {i} ([yshift=1mm]m29.west);
@@ -291,14 +306,14 @@ Digital down conversion
             \chainin (m\i14)[join=by dspline];
             \chainin (m\i15)[join=by dspline];
             \chainin (m215)[join=by dspline];
-            \chainin (m216)[join=by dspflow];
         \end{scope}
 
     }
+    \draw[dspflow] (m215) -- (m216);
 
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m03) (m13) (m14),label=above:{DC offset}] {};
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m43) (m33) (m34),label=below:{DC offset}] {};
-    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m45) (m07),label=below:{IQ balance}] {};
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(ma6) (mb6) (m15),label=below:{IQ balance}] {};
 \end{tikzpicture}}
     \caption{DSP RX path}
     \label{fig:rxpath}
