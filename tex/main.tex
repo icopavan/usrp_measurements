@@ -129,7 +129,8 @@ digital conversion is handled by the FPGA board at a fixed sampling rate of
 \SI{100}{\mega\samples\per\second}. Samples can be transferred to and from the device via the
 GBit network interface. This limits the maximum sampling rate for \SI{16}{\bit} to
 \SI{25}{\mega\samples\per\second} and \SI{50}{\mega\samples\per\second} for \SI{8}{\bit}.
-A detailed overview can be seen in \cref{fig:usrp}.\begin{figure}[htb]
+A detailed overview can be seen in \cref{fig:usrp}. Galler's master's thesis \cite{flo}
+give a more in depth description of the analog front end and the FPGA board.\begin{figure}[htb]
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
@@ -149,9 +150,19 @@ actual cutoff frequency of \SI{20}{\mega\hertz}. This is mentioned in the market
 \cite{ni_29xx} only and can also be seen in \cref{sec:rftx}. %TODO also rfrx?
 
 
+Be advised to always use the latest driver versions, which are not necessarily included in
+the recent linux distributions. Changes to byte ordering in the protocol \cite{usrp_byte} can
+generate frequency artifacts in \SI{8}{\bit} mode and a bug in the configuration of the half
+band filters can lead to two tones at \SI{50}{\mega\samples\per\second} \cite{usrp_hb}.
+
+
 Digital down conversion for RX and digital up conversion for TX are handled by two dedicated DSP chains.
 \Cref{sec:dsprx} and \cref{sec:dsptx} explain both in more detail, which has been derived from the FPGA sources at \cite{usrp_src}.
-\subsection{DSP RX chain}
+In order to minimize noise, both chains use round to nearest with error diffusion and clipping
+for converting signals to lower bit withs. IQ samples are generated with a final bit width of
+\SI{16}{\bit} per channel. If the \SI{8}{\bit} line format is used, then the lower \SI{8}{\bit}
+are truncated from the sample.
+\subsubsection{DSP RX chain}
 \label{sec:dsprx}
 \begin{figure}[htb]
     \centering
@@ -348,8 +359,11 @@ cordic stage. A 4 stage CIC with configurable decimation ratio, and two half ban
 have a decimation ratio of 2 each, are used for down conversion. The small half band filter can
 be turned off. Both half band filters are designed with the tool from Doolittle \cite{halfband}.
 After down conversion there is a scaling stage and before handing off the samples to the FIFO,
-they are clipped to \SI{16}{\bit}. %TODO dsp core connection points
-\subsection{DSP TX chain}
+they are clipped to \SI{16}{\bit}.
+
+The design is prepared for custom DSP functionality, which can be inserted in front of the
+cordic or after the whole chain.
+\subsubsection{DSP TX chain}
 \label{sec:dsptx}
 \begin{figure}[htb]
     \centering
@@ -506,16 +520,22 @@ they are clipped to \SI{16}{\bit}. %TODO dsp core connection points
     \draw[dspconn] (m28) -- (m210);
 
 
-    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m09) (maa10) (mbb10),label=below:{IQ Balance}] {};
-    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(ma11) (mb11),label=below:{DC Offset}] {};
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m09) (maa10) (mbb10),label=below:{IQ balance}] {};
+    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(ma11) (mb11),label=below:{DC offset}] {};
 \end{tikzpicture}
 }
     \caption{DSP TX chain}
     \label{fig:txpath}
 \end{figure}
-\begin{itemize}
-    \item DSP Core connection points!
-\end{itemize}
+The TX chain (\cref{fig:txpath}) features similar stages as the RX chain, but in reversed order and
+interpolators instead of decimators. In \SI{8}{\bit} line mode the samples are first shifted by \SI{8}{\bit}.
+Because of this the samples input into the TX chain are always \SI{16}{\bit} per channel. 
+Bit widths are \SI{18}{\bit} after the half band filters and CIC, and \SI{24}{\bit} after the cordic.
+IQ balance and DC offset are automatically configured according to calibration data generated with the commands
+\verb+uhd_cal_tx_iq_balance+ and \verb+uhd_cal_tx_dc_offset+\cite{usrp_cal}.
+
+Custom DSP functionality can be injected in front of the complete TX chain or between
+scaling and IQ balance.
 \subsection{GNU Radio}
 \begin{itemize}
     \item c++/python/grc
