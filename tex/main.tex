@@ -190,7 +190,8 @@ digital conversion is handled by the FPGA board at a fixed sampling rate of
 GBit network interface. This limits the maximum sampling rate for \SI{16}{\bit} to
 \SI{25}{\mega\samples\per\second} and \SI{50}{\mega\samples\per\second} for \SI{8}{\bit}.
 A detailed overview can be seen in \cref{fig:usrp}. Galler's master's thesis \cite{flo}
-give a more in depth description of the analog front end and the FPGA board.\begin{figure}[htb]
+give a more in depth description of the analog front end and the FPGA board.
+\begin{figure}[htb]
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
@@ -737,12 +738,24 @@ stop processing early. Additional information on the particular modifications ar
 \cref{sec:measgnu}.
 %======================================================================
 \section{Measurement Setup}
-\subsection{Matlab}
-\begin{itemize}
-    \item describe rx/tx
-    \item describe measurement classes
-    \item why not measurement toolbox?
-\end{itemize}
+All the measurements and data processing have been done utilizing the following tools:
+\subsection{Mathworks Matlab}
+Matlab has been used to automate the measurements, process the raw data, and for
+initial visualization of the data. USRP control and data acquisition was planned to
+be done from matlab directly with the hardware drivers supplied by Mathworks \cite{matlab_usrp},
+which proved futile, because the matlab drivers for
+USRP only provide very basic functionality. E.g. support for setting the clock to
+external is missing. Another problem has been, that matlab was too slow for processing
+data at a sample rate of \SI{50}{\mega\samples\per\second}. This led to the approach of
+using GNU Radio for communicating with the USRP. Two GNU Radio flowgraphs were
+developed and modified, that write the samples to a file in memory or read them
+(see \cref{sec:measgnu}). Acompanying Matlab functions were developed that convert
+between the binary data and complex Matlab vectors.
+
+Because of no available VISA stack, automation of the meters was done via
+SCPI\footnote{Standard Commands for Programmable Instruments} over Ethernet and VXI-11.
+To be able to use VXI-11 without a VISA stack a python library \cite{yamamoto_vxi-11} was
+utilized.
 \subsection{GNU Radio}
 \label{sec:measgnu}
 \begin{itemize}
