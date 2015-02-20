@@ -599,6 +599,7 @@ Custom DSP functionality can be injected in front of the complete TX chain or be
 scaling and IQ balance.
 
 \subsection{GNU Radio}
+\label{sec:intgnu}
 GNU Radio is a software which provides a framework for creating software defined radios. It consists
 of signal processing modules which are written in C++, a flowgraph oriented framework which can be
 used from C++ and python, and the accompanying program ``GNU Radio Companion''\cite{gnuradio_grc},
@@ -659,7 +660,7 @@ import time
 class rx(gr.top_block): (*\label{line:classdef}*)
 def __init__(self, freq=2.4e9, gain=0, filename="", samples=1000000, lo_off=0, dc=0, samp_rate=50e6, wire=8): (*\label{line:init}*)
         gr.top_block.__init__(self, "Receiver for Measurements")
-        if wire == 8:
+        if wire == 8: (*\label{line:w81}*)
             otw_format = "sc8"
             bs = gr.sizeof_char*2
         elif wire == 16:
@@ -682,11 +683,11 @@ def __init__(self, freq=2.4e9, gain=0, filename="", samples=1000000, lo_off=0, d
         self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(freq, lo_off), 0)
         self.uhd_usrp_source_0.set_gain(gain, 0)
         if dc == 0:
-	    self.uhd_usrp_source_0.set_auto_dc_offset(False)
-	    self.uhd_usrp_source_0.set_dc_offset(0)
+            self.uhd_usrp_source_0.set_auto_dc_offset(False) (*\label{line:dcoff1}*)
+	    self.uhd_usrp_source_0.set_dc_offset(0)          (*\label{line:dcoff2}*)
         self.blocks_skiphead_0 = blocks.skiphead(bs, int(samp_rate))
-        if wire == 8:
-            self.blocks_short_to_char_0 = blocks.short_to_char(2)
+        if wire == 8: (*\label{line:w82}*)
+        self.blocks_short_to_char_0 = blocks.short_to_char(2) (*\label{line:short}*)
         self.blocks_head_0 = blocks.head(bs, samples)
         self.blocks_file_sink_0 = blocks.file_sink(bs, filename, False)
         self.blocks_file_sink_0.set_unbuffered(False)
@@ -694,7 +695,7 @@ def __init__(self, freq=2.4e9, gain=0, filename="", samples=1000000, lo_off=0, d
         ################################################## (*\label{line:conninst}*)
         # Connections
         ##################################################
-        if wire == 8:
+        if wire == 8: (*\label{line:w83}*)
             self.connect((self.uhd_usrp_source_0, 0), (self.blocks_short_to_char_0, 0))
             self.connect((self.blocks_short_to_char_0, 0), (self.blocks_skiphead_0, 0))
         elif wire == 16:
@@ -758,11 +759,30 @@ To be able to use VXI-11 without a VISA stack a python library \cite{yamamoto_vx
 utilized.
 \subsection{GNU Radio}
 \label{sec:measgnu}
-\begin{itemize}
-    \item volk init
-    \item modified python versions (DC offset!)
-\end{itemize}
-See rx/tx grc
+As meantioned in \cref{sec:intgnu} two communication scripts have been developed with GNU
+Radio to write USRP samples to a file, and read samples from a file and send them to the USRP.
+Tests showed that right after starting the flowgraph there are phase errors despite a
+locked LO, which is checked by the USRP driver. Because of this the flowgraph in \cref{fig:grc_rx}
+uses a {\ttfamily Skip Head} module, which skips enough samples.
+
+Because the USRP GNU Radio Companion module has no GUI parameter to turn off DC offset
+compensation, the output script was modified by hand. Despite lacking some possibilities
+in the interface, it is however possible to do everything from within python.
+\Cref{line:dcoff1} and \cref{line:dcoff2} in \cref{lst:rxfinal.py} turn off DC offset
+compensation by disabling the accumulator and setting the accumulator value to zero 
+(see \cref{sec:dsprx}).
+
+Several other additions (\Cref{line:w81,line:w82,line:w83} in \cref{lst:rxfinal.py})
+make the flowgraph more dynamic, to support \SI{8}{\bit} and \SI{16}{\bit} mode with
+the same python script. In \SI{8}{\bit} mode an additional block in \cref{line:short}
+is added to the flowgraph, which converts the short integers from the USRP source to
+characters. This is necessary because the USRP block has a very limited choice of
+output data formats.
+
+The transmit script is very similar to the receive script. Only differences are,
+that the read file data is repeated in a loop, and an additional functionality
+allows for endless streaming, which is cancelled on receiveing a line feed on
+standard input.
 \subsection{Meters}
 \begin{itemize}
     \item R\&S SMBV 100a
