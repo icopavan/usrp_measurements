@@ -48,6 +48,10 @@ bookmarksopen=false
 \DeclareSIUnit \samples {S}
 \sisetup{per-mode = symbol}
 
+\lstset{language=Python,numbers=left,numberstyle=\tiny,stepnumber=5,numbersep=5pt,frame=single,
+breaklines=true,postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow\space}},
+captionpos=b,escapeinside={(*}{*)}}
+
 \usepackage{cleveref}
 
 \begin{document}
@@ -150,8 +154,8 @@ actual cutoff frequency of \SI{20}{\mega\hertz}. This is mentioned in the market
 \cite{ni_29xx} only and can also be seen in \cref{sec:rftx}. %TODO also rfrx?
 
 
-Be advised to always use the latest driver versions, which are not necessarily included in
-the recent linux distributions. Changes to byte ordering in the protocol \cite{usrp_byte} can
+It is advisable to always use the latest driver versions, which are not necessarily included in
+the recent Linux distributions. Changes to byte ordering in the protocol \cite{usrp_byte} can
 generate frequency artifacts in \SI{8}{\bit} mode and a bug in the configuration of the half
 band filters can lead to two tones at \SI{50}{\mega\samples\per\second} \cite{usrp_hb}.
 
@@ -536,22 +540,160 @@ IQ balance and DC offset are automatically configured according to calibration d
 
 Custom DSP functionality can be injected in front of the complete TX chain or between
 scaling and IQ balance.
+
 \subsection{GNU Radio}
-\begin{itemize}
-    \item c++/python/grc
-    \item volk init
-    \item rx.grc tx.grc
-    \item modified python versions (DC offset!)
-\end{itemize}
+GNU Radio is a software which provides a framework for creating software defined radios. It consists
+of signal processing modules which are written in C++, a flowgraph oriented framework which can be
+used from C++ and python, and the accompanying program ``GNU Radio Companion''\cite{gnuradio_grc},
+which provides a graphical user interface for easier flowgraph creation. Since GNU Radio comes
+with a wide variety of signal processing modules and an easy to use graphical user interface,
+even complicated old radio systems can be rebuilt without any programming knowledge \cite{isee3}.
+
+Since GNU Radio and the USRP drivers (called uhd) are integrated into every
+major linux distribution, setup is as easy as installing the packages. There are
+also several linux distributions available, which come with GNU Radio and the drivers
+pre installed. One additional setup step, which is necessary, to achieve good throughput,
+is to profile VOLK\footnote{Vector-Optimized Library of Kernels} with the command
+\verb+volk_profile+, which selects the fastest way to do vector operations for this
+particular host\cite{gnuradio_volk}.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=\textwidth]{grc}
+    \caption{GNU Radio companion RX flowgraph}
+    \label{fig:grc_rx}
+\end{figure}
+An example flowgraph, which has been used for RX measurements, can be seen in \cref{fig:grc_rx}.
+Every flowgraph has an {\ttfamily Options} block, which determines the name of the output module ({\ttfamily ID}),
+which GUI to use for the application ({\ttfamily Generate Options}), and some optional runtime options.
+{\ttfamily Parameter} blocks can be used for passing values from either a calling flowgraph or as has
+been used in this example for passing values via command line arguments. {\ttfamily Type} specifies the
+data type, {\ttfamily ID} the name of the command line argument and the name of the generated variable,
+and {\ttfamily Value} an optional default. Signal processing blocks have input and/or output ports, that
+need to be connected. The flowgraph \cref{fig:grc_rx} creates a gnuradio program, that samples
+packets from an USRP source, drops the first \SI{10}{\kilo\samples} ({\ttfamily Skip Head}), and writes
+them to the file named {\ttfamily filename} ({\ttfamily File Sink}). {\ttfamily Head} stops processing after the
+specified number of samples. Although most of the parameters have numerical values, they actually
+reference the parameters on top. GNU Radio Companion displays the default values of the parameters,
+if there are any given. Compiling this flowgraph creates a python script called {\ttfamily rx.py} which
+can now directly used, or adapted to requirements, that can not be met by GNU Radio Companion (e.g.
+conditionally instantiating flowgraph modules).
+
+\begin{figure}[htbp]
+    \centering
+    \begin{lstlisting}[basicstyle=\tiny,caption={Generated RX flowgraph module with modifications ({\ttfamily rx\_final.py)}},label=lst:rxfinal.py]
+#!/usr/bin/env python
+##################################################
+# Gnuradio Python Flow Graph
+# Title: Receiver for Measurements
+# Author: Gernot Vormayr
+# Generated: Wed Dec  3 10:00:57 2014
+##################################################
+
+from gnuradio import blocks
+from gnuradio import eng_notation
+from gnuradio import gr
+from gnuradio import uhd
+from gnuradio.eng_option import eng_option
+from gnuradio.filter import firdes
+from optparse import OptionParser
+import time
+
+class rx(gr.top_block): (*\label{line:classdef}*)
+def __init__(self, freq=2.4e9, gain=0, filename="", samples=1000000, lo_off=0, dc=0, samp_rate=50e6, wire=8): (*\label{line:init}*)
+        gr.top_block.__init__(self, "Receiver for Measurements")
+        if wire == 8:
+            otw_format = "sc8"
+            bs = gr.sizeof_char*2
+        elif wire == 16:
+            otw_format = "sc16"
+            bs = gr.sizeof_short*2
+
+        ################################################## (*\label{line:blockinst}*)
+        # Blocks
+        ##################################################
+        self.uhd_usrp_source_0 = uhd.usrp_source(
+        	device_addr="addr=192.168.10.2",
+        	stream_args=uhd.stream_args(
+        		cpu_format="sc16",
+        		otw_format=otw_format,
+        		channels=range(1),
+        	),
+        )
+        self.uhd_usrp_source_0.set_clock_source("external", 0)
+        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(freq, lo_off), 0)
+        self.uhd_usrp_source_0.set_gain(gain, 0)
+        if dc == 0:
+	    self.uhd_usrp_source_0.set_auto_dc_offset(False)
+	    self.uhd_usrp_source_0.set_dc_offset(0)
+        self.blocks_skiphead_0 = blocks.skiphead(bs, int(samp_rate))
+        if wire == 8:
+            self.blocks_short_to_char_0 = blocks.short_to_char(2)
+        self.blocks_head_0 = blocks.head(bs, samples)
+        self.blocks_file_sink_0 = blocks.file_sink(bs, filename, False)
+        self.blocks_file_sink_0.set_unbuffered(False)
+
+        ################################################## (*\label{line:conninst}*)
+        # Connections
+        ##################################################
+        if wire == 8:
+            self.connect((self.uhd_usrp_source_0, 0), (self.blocks_short_to_char_0, 0))
+            self.connect((self.blocks_short_to_char_0, 0), (self.blocks_skiphead_0, 0))
+        elif wire == 16:
+            self.connect((self.uhd_usrp_source_0, 0), (self.blocks_skiphead_0, 0))
+        self.connect((self.blocks_skiphead_0, 0), (self.blocks_head_0, 0))
+        self.connect((self.blocks_head_0, 0), (self.blocks_file_sink_0, 0))
+(*\label{line:setters}*)
+if __name__ == '__main__': (*\label{line:main}*)
+    parser = OptionParser(option_class=eng_option, usage="%prog: [options]")
+    parser.add_option("", "--freq", dest="freq", type="eng_float", default=eng_notation.num_to_str(2.4e9), help="Set freq [default=%default]")
+    parser.add_option("", "--gain", dest="gain", type="eng_float", default=eng_notation.num_to_str(0), help="Set gain [default=%default]")
+    parser.add_option("", "--filename", dest="filename", type="string", default="", help="Set filename [default=%default]")
+    parser.add_option("", "--samples", dest="samples", type="intx", default=1000000, help="Set samples [default=%default]")
+    parser.add_option("", "--lo-off", dest="lo_off", type="eng_float", default=eng_notation.num_to_str(0), help="Set lo_off [default=%default]")
+    parser.add_option("", "--dc", dest="dc", type="intx", default=0, help="Set dc [default=%default]")
+    parser.add_option("", "--samp-rate", dest="samp_rate", type="eng_float", default=eng_notation.num_to_str(50e6), help="Set samp_rate [default=%default]")
+    parser.add_option("", "--wire", dest="wire", type="intx", default=8, help="Set wire [default=%default]")
+    (options, args) = parser.parse_args()
+    if gr.enable_realtime_scheduling() != gr.RT_OK:
+        print "Error: failed to enable realtime scheduling."
+    tb = rx(freq=options.freq, gain=options.gain, filename=options.filename, samples=options.samples, lo_off=options.lo_off, dc=options.dc, samp_rate=options.samp_rate, wire=options.wire)
+    tb.start() (*\label{line:start}*)
+    tb.wait() (*\label{line:wait}*)
+    \end{lstlisting}
+\end{figure}
+The generated script follows a predefined structure. An example of a modified python
+file can be seen in \cref{lst:rxfinal.py}. Generated versions contain a class
+(\cref{line:classdef}) which represents the flowgraph. In the
+\lstinline{__init__} function (\cref{line:init}) the whole flowgraph,
+starting with the blocks (\cref{line:blockinst}) followed by the connections
+(\cref{line:conninst}), is instantiated. Normally GNU Radio Companion would insert
+getters and setters for all variables in \cref{line:setters}, but those have been
+remove from the script, because those are only needed for graphical user interfaces,
+to synchronize the displayed values with the used ones. The last block in the file
+represents the main function (\cref{line:main}), which gets executed, when the script
+is called directly, instead of importing it into a larger project. This block parses
+the arguments handed over to the script, does necessary setup, instantiates
+the defined class, starts the processing (\cref{line:start}) asynchronously, and waits for completion
+(\cref{line:wait}). \lstinline{tb.stop()} could be used between those two functions to
+stop processing early. Additional information on the particular modifications are in
+\cref{sec:measgnu}.
+%======================================================================
 \section{Measurement Setup}
-\subsection{GNU Radio}
-See rx/tx grc
 \subsection{Matlab}
 \begin{itemize}
     \item describe rx/tx
     \item describe measurement classes
     \item why not measurement toolbox?
 \end{itemize}
+\subsection{GNU Radio}
+\label{sec:measgnu}
+\begin{itemize}
+    \item volk init
+    \item modified python versions (DC offset!)
+\end{itemize}
+See rx/tx grc
 \subsection{Meters}
 \begin{itemize}
     \item R\&S SMBV 100a
