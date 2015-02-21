@@ -788,9 +788,17 @@ signals for RX measurements and as clock reference. Since the SMIQ06B posesses n
 Ethernet connectivity, an Agilent E85810 GPIB Etheret bridge provided the necessary
 conversion. Power measurements were taken with an Agilent N1914A Power meter and an
 Agilent E9301A Power Sensor. Network parameters and power measurements of specific
-spectrum ranges were done with a Rhode \& Schwarz ZVL. The following section describe
-each setup in more detail.
+spectrum ranges were done with a Rhode \& Schwarz ZVL. In order to not interfere
+with the high data rate connection needed by USRP it used a dedicated network interface.
+
+The TX measurement data was corrected with the S-Parameters, of the cable and
+attenuators, and the RX measurements by measuring the signal power arriving at
+the USRP by replacing the USRP with the power meter.
+
+\Cref{sec:rfsetup,sec:ifsetup,sec:imsetup} describe each setup in more detail.
+
 \subsubsection{RF Frequency Response}
+\label{sec:rfsetup}
 \begin{figure}[htb]
     \begin{subfigure}[t]{.5\linewidth}
         \centering
@@ -847,9 +855,16 @@ each setup in more detail.
     \caption{RF frequency response measurement setup}
     \label{fig:rfsetup}
 \end{figure}
-A Rhode \& Schwarz SMBV 100a was used to generate signals for RX measurements and
-as a clock reference. Output
+\Cref{fig:rfsetup} depicts the basic measurement setup.
+
+Since the power head can only measure signals between \SI{-60}{\deci\belm} and
+\SI{20}{\deci\belm} a \SI{6}{\deci\bel} and a \SI{10}{\deci\bel} attenuator were used,
+to bring down the signal to acceptable levels. Since the USRP shows high DC levels,
+caused by the mixer used, the RF frequency response has been measured with an offset
+of 1 MHz. DC offset correction is not an option, because this removes DC completely.
+
 \subsubsection{IF Frequency Response}
+\label{sec:ifsetup}
 \begin{figure}[htb]
     \begin{subfigure}[t]{.5\linewidth}
         \centering
@@ -907,7 +922,14 @@ as a clock reference. Output
     \caption{IF frequency response measurement setup}
     \label{fig:ifsetup}
 \end{figure}
-\subsubsection{Intermodulation properties}
+Because of availability issues the SMIQ was used for the setup in \cref{fig:ifsetup}.
+This setup used an attenuator because of the same reasons mentioned in \ref{sec:rfsetup}.
+
+For TX measurement the ZVL was used, unlike in \cref{sec:rfsetup}L, to be able to isolate
+only the intended frequency.
+
+\subsubsection{Intermodulation Properties}
+\label{sec:imsetup}
 \begin{figure}[htb]
     \begin{subfigure}[t]{.5\linewidth}
         \centering
@@ -970,13 +992,20 @@ as a clock reference. Output
     \caption{Intermodulation properties measurement setup}
     \label{fig:imsetup}
 \end{figure}
+TX measurement used the same setup as described in \cref{sec:ifsetup}.
+
+For RX at first a similar measurement setup as in \cref{sec:rfsetup} was attempted,
+but it was not possible to generate a signal free from intermodulation products with
+the SMBV. With the ZVL it was verified, that those products are caused by the
+SMBV. This led to the setup in \cref{fig:imsetup}. This setup utilized a Mini-Circuits
+ZFRSC-183+ power splitter/combiner. Since this is a resistive power splitter, it has
+very poor isolation\cite{pwrsplit}. In order to prevent the signal generators from
+distorting the output because of this coupling the \SI{10}{\deci\bel} attenuator
+and the DC block were used.
+%======================================================================
 \section{Measurement Results}
 \subsection{RF Frequency Response}
 \subsubsection{RX}
-\begin{itemize}
-    \item Setup (smbv -> cable -> usrp)
-    \item 1MHz offset (dc!)
-\end{itemize}
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
@@ -1029,10 +1058,6 @@ as a clock reference. Output
     \item 31.5dB max
 \end{itemize}
 \subsubsection{TX}
-\begin{itemize}
-    \item usrp -> 16dB att (10dB + 6 dB) -> pwr meter
-    \item measured cable
-\end{itemize}
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
@@ -1092,7 +1117,7 @@ as a clock reference. Output
     \label{fig:outputrf1}
 \end{figure}
 \begin{itemize}
-    \item describe where stuff is comming from
+    \item describe where stuff is coming from
 \end{itemize}
 \subsection{IF Frequency Response}
 \subsubsection{TX}
@@ -1175,8 +1200,6 @@ as a clock reference. Output
 \subsection{Intermodulation Properties}
 \subsubsection{RX}
 \begin{itemize}
-    \item SMBV - usrp did not work (seen IM caused by ADC in SMBV;)
-    \item SMBV 10db dcblock - SMIQ 10db dcblock - pwr splitter - usrp
     \item probably caused by ADC
 \end{itemize}
 \begin{figure}[htb]
@@ -1207,7 +1230,6 @@ as a clock reference. Output
 \end{figure}
 \subsubsection{TX}
 \begin{itemize}
-    \item usrp - 16dB att - zvl
     \item gain stepping did not work; nor stepping zvl -> probably caused by ADC
 \end{itemize}
 \begin{figure}[htb]
@@ -1236,6 +1258,9 @@ as a clock reference. Output
     \caption{TX IP3}
     \label{fig:txip3}
 \end{figure}
+
+%======================================================================
+\clearpage
 \listoffigures
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,literature}
