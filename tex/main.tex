@@ -13,6 +13,7 @@
 \usepackage{amssymb}
 \usepackage{listings}
 \usepackage{tocloft}
+\usepackage{subcaption}
 
 \usepackage{url}
 
@@ -37,7 +38,7 @@ bookmarksopen=false
 \pgfplotsset{unit code/.code 2 args={\si{#1#2}}}
 
 \usepackage{tikz}
-\usetikzlibrary{dsp,chains,fit}
+\usetikzlibrary{dsp,chains,fit,matrix}
 
 \makeatletter
 \pgfdeclareshape{dspswitchshape}{%
@@ -114,10 +115,10 @@ captionpos=b,escapeinside={(*}{*)}}
 \begin{titlepage}
     \enlargethispage{1cm}
     \centering
-    \begin{minipage}{0.49\textwidth}
+    \begin{minipage}{0.49\linewidth}
         \includegraphics[height=1.5cm,keepaspectratio]{EMCE_Logo_CMYK_color}
     \end{minipage}
-    \begin{minipage}{0.49\textwidth}
+    \begin{minipage}{0.49\linewidth}
         \flushright
         \includegraphics[height=1.5cm,keepaspectratio]{TULogo_CMYK}
     \end{minipage}\\
@@ -135,21 +136,20 @@ captionpos=b,escapeinside={(*}{*)}}
     {Univ.Ass. Dipl.-Ing. Dr.techn. \large Thomas ~\textsc{Faseth}}
     \vspace*{2cm}
 
-    \rule{\textwidth}{0.4pt}
-    \begin{minipage}[t]{0.70\textwidth}
+    \rule{\linewidth}{0.4pt}
+    \begin{minipage}[t]{0.7\linewidth}
         \begin{large}
             EMCE - Institute of Electrodynamics, Microwave and Circuit Engineering
         \end{large}\\
         Vienna University of Technology
     \end{minipage}
-    \hspace{1pt}
-    \begin{minipage}[t]{0.27\textwidth}
+    \begin{minipage}[t]{0.27\linewidth}
         Gusshausstrasse 25\\
         1040 Vienna\\
         www.emce.tuwien.ac.at
     \end{minipage}
     \vspace*{-3pt}
-    \rule{\textwidth}{0.4pt}
+    \rule{\linewidth}{0.4pt}
     \clearpage
 \end{titlepage}
 
@@ -192,15 +192,14 @@ GBit network interface. This limits the maximum sampling rate for \SI{16}{\bit} 
 A detailed overview can be seen in \cref{fig:usrp}. Galler's master's thesis \cite{flo}
 give a more in depth description of the analog front end and the FPGA board.
 \begin{figure}[htb]
-    \centering
-    \begin{minipage}{0.45\textwidth}
+    \begin{subfigure}{0.5\linewidth}
         \centering
         \includegraphics[scale=0.5]{overall}
-    \end{minipage}
-    \begin{minipage}{0.45\textwidth}
+    \end{subfigure}
+    \begin{subfigure}{0.5\linewidth}
         \centering
         \includegraphics[scale=0.5]{sbx}
-    \end{minipage}
+    \end{subfigure}
     \caption{Overview of the hardware on the N210 circuit board and SBX ciruit board\cite{flo}.}
     \label{fig:usrp}
 \end{figure}
@@ -227,7 +226,7 @@ are truncated from the sample.
 \label{sec:dsprx}
 \begin{figure}[htb]
     \centering
-\resizebox{\textwidth}{!}{
+\resizebox{\linewidth}{!}{
 \begin{tikzpicture}
     \matrix (m1) [row sep=5mm, column sep=5mm,ampersand replacement=\&]
     {
@@ -428,7 +427,7 @@ cordic or after the whole chain.
 \label{sec:dsptx}
 \begin{figure}[htb]
     \centering
-\resizebox{\textwidth}{!}{
+\resizebox{\linewidth}{!}{
 \begin{tikzpicture}
     \matrix (m1) [row sep=5mm, column sep=5mm,ampersand replacement=\&]
     {
@@ -617,7 +616,7 @@ particular host\cite{gnuradio_volk}.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=\textwidth]{grc}
+    \includegraphics[width=\linewidth]{grc}
     \caption{GNU Radio companion RX flowgraph}
     \label{fig:grc_rx}
 \end{figure}
@@ -783,13 +782,77 @@ The transmit script is very similar to the receive script. Only differences are,
 that the read file data is repeated in a loop, and an additional functionality
 allows for endless streaming, which is cancelled on receiveing a line feed on
 standard input.
-\subsection{Meters}
-\begin{itemize}
-    \item R\&S SMBV 100a
-    \item R\&S SMIQ06B \& Agilent E85810 GPIB
-    \item R\&S ZVL
-    \item Agilent N1914A (Power head!)
-\end{itemize}
+\subsection{Meters and Measurment Setup}
+A Rhode \& Schwarz SMBV 100a, and a Rhode \& Schwarz SMIQ06B were used to generate
+signals for RX measurements and as clock reference. Since the SMIQ06B posesses no
+Ethernet connectivity, an Agilent E85810 GPIB Etheret bridge provided the necessary
+conversion. Power measurements were taken with an Agilent N1914A Power meter and an
+Agilent E9301A Power Sensor. Network parameters and power measurements of specific
+spectrum ranges were done with a Rhode \& Schwarz ZVL. The following section describe
+each setup in more detail.
+\subsubsection{RF Frequency Response}
+\begin{figure}[htb]
+    \begin{subfigure}[b]{.5\linewidth}
+        \centering
+        \resizebox{\linewidth}{!}{
+        \begin{tikzpicture}
+            \matrix (m) [matrix of nodes,
+                row sep=1cm,
+                column sep=1cm,
+                ampersand replacement=\&,
+                nodes={draw,
+                    line width=1pt,
+                    anchor=center, 
+                    text centered,
+                    rounded corners,
+                    minimum width=1.5cm,
+                    minimum height=8mm
+                }]
+            {
+                USRP \& \SI{6}{\deci\bel} attn \& SMBV \\
+                \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
+            };
+            \draw[dashed] (m-2-1) -- node [pos=0.25,auto] {eth0} (m-1-1);
+            \draw[rounded corners,dashed] (m-2-1)  -| node [pos=0.05,auto] {eth1} (m-1-3);
+            \draw[thick] (m-1-1) -- node [pos=0.3,auto] {RX} (m-1-2) -- (m-1-3);
+        \end{tikzpicture}
+        }
+        \caption{RX}
+    \end{subfigure}
+    \begin{subfigure}[b]{.5\linewidth}
+        \centering
+        \resizebox{\linewidth}{!}{
+        \begin{tikzpicture}
+            \matrix (m) [matrix of nodes,
+                row sep=1cm,
+                column sep=1cm,
+                ampersand replacement=\&,
+                nodes={draw,
+                    line width=1pt,
+                    anchor=center, 
+                    text centered,
+                    rounded corners,
+                    minimum width=1.5cm,
+                    minimum height=8mm
+                }]
+            {
+                USRP \& \SI{16}{\deci\bel} attn \& Power Meter \\
+                \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
+            };
+            \draw[dashed] (m-2-1) -- node [pos=0.25,auto] {eth0} (m-1-1);
+            \draw[rounded corners,dashed] (m-2-1)  -| node [pos=0.05,auto] {eth1} (m-1-3);
+            \draw[thick] (m-1-1) -- node [pos=0.3,auto] {TX} (m-1-2) -- (m-1-3);
+        \end{tikzpicture}
+        }
+        \caption{TX}
+    \end{subfigure}
+    \caption{RF frequency response measurement setup}
+    \label{fig:rfsetup}
+\end{figure}
+A Rhode \& Schwarz SMBV 100a was used to generate signals for RX measurements and
+as a clock reference. Output
+\subsubsection{IF Frequency Response}
+\subsubsection{Intermodulation properties}
 \section{Measurement Results}
 \subsection{RF Frequency Response}
 \subsubsection{RX}
