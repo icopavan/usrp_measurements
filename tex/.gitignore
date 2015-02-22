@@ -116,3 +116,6 @@ sympy-plots-for-*.tex/
 *.pdf
 
 *.auxlock
+
+*.figlist
+*.makefile
