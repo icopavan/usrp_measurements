@@ -79,7 +79,7 @@ bookmarksopen=false
           \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@ya}}
           \pgfpathmoveto{\pgfpoint{\pgf@xb}{\pgf@ya}}
           \pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@yb}}
-          \pgfsetdash{{0.5pt}{1pt}}{0pt}
+          \pgfsetdash{{0.5pt}{2pt}}{0pt}
           \pgfusepath{stroke}
       }
       {\pgfpathcircle{\pgfpoint{\pgf@xa}{\pgf@yb}}{2pt}}
@@ -137,13 +137,16 @@ captionpos=b,escapeinside={(*}{*)}}
     \vspace*{2cm}
 
     \rule{\linewidth}{0.4pt}
-    \begin{minipage}[t]{0.7\linewidth}
+    \begin{minipage}[t]{0.55\linewidth}
+        \flushleft
         \begin{large}
             EMCE - Institute of Electrodynamics, Microwave and Circuit Engineering
         \end{large}\\
         Vienna University of Technology
     \end{minipage}
+    \hfill
     \begin{minipage}[t]{0.27\linewidth}
+        \flushright
         Gusshausstrasse 25\\
         1040 Vienna\\
         www.emce.tuwien.ac.at
@@ -157,26 +160,26 @@ captionpos=b,escapeinside={(*}{*)}}
 
 \begin{abstract}
     The low cost Ettus Research USRP\footnote{Univeral Software Radio Platform} 
-    combined with GNURadio enables implementing cheap and simple radio solutions.
+    combined with GNU Radio enables implementing cheap and simple radio solutions.
     This allows rapid prototyping of new radio protocols, easier test setups for
     lab purposes and even reconstructing old analog communications hardware on a
     budget. Although Ettus Research provides schematics, source code, and documentation,
-    there is no data available on the RF characteristics of the USRP devices.
+    there is no data available on the RF characteristics of USRP devices.
 \end{abstract}
 
 \section{Introduction}
 Software defined radio systems (SDR) can be operated on a very broad frequency range,
-can be easily adapted to various needs and allow operations which would be
+easily adapted to various needs and allow operations which would be
 impossible or very expensive in analog hardware. A SDR consists of specialised
-software, a general purpose computer, and an analog front end with fast
-ADCs/DACs and optionally DSP and mixing capabilities. One of those front ends is
+software, a general purpose computer, and an analog frontend with fast
+ADCs/DACs and optionally DSP and mixing capabilities. One of those frontends is
 the Ettus Research USRP N2x0 product family. This family consists of the N200 and
-the N210, which has a bigger FPGA, allowing additional custom DSP code directly
+the N210, of which the latter has a bigger FPGA, allowing additional custom DSP code directly
 in the device. Both contain \SI{100}{\mega\samples\per\second} dual ADC,
 \SI{400}{\mega\samples\per\second} dual DAC, Xilinx Spartan
 3A-DSP, and Gigabit Ethernet connectivity to stream data. The analog part needs
 to be provided by one of several possible daughter boards, which allow operation
-from DC to 6 GHz\cite{ettus_n2x0}. This products are also available as rebranded
+from DC to 6 GHz\cite{ettus_n2x0}. These products are also available as rebranded
 versions from NI.
 \subsection{NI USRP-2922}
 \label{sec:usrp}
@@ -191,7 +194,7 @@ digital conversion is handled by the FPGA board at a fixed sampling rate of
 GBit network interface. This limits the maximum sampling rate for \SI{16}{\bit} to
 \SI{25}{\mega\samples\per\second} and \SI{50}{\mega\samples\per\second} for \SI{8}{\bit}.
 A detailed overview can be seen in \cref{fig:usrp}. Galler's master's thesis \cite{flo}
-give a more in depth description of the analog front end and the FPGA board.
+gives a more in depth description of the analog frontend and the FPGA board.
 \begin{figure}[htb]
     \begin{subfigure}{0.5\linewidth}
         \centering
@@ -201,18 +204,18 @@ give a more in depth description of the analog front end and the FPGA board.
         \centering
         \includegraphics[scale=0.5]{sbx}
     \end{subfigure}
-    \caption{Overview of the hardware on the N210 circuit board and SBX ciruit board\cite{flo}.}
+    \caption{Overview of the hardware on the N210 circuit board and SBX circuit board\cite{flo}.}
     \label{fig:usrp}
 \end{figure}
 Since this overview was created according
 to the schematics in \cite{sch_sbx}, the filters LP2 and LP5 state wrong cutoff frequencies.
 Those seem to differ between the Ettus Research SBX and the NI USRP-2922, where both have an
 actual cutoff frequency of \SI{20}{\mega\hertz}. This is mentioned in the marketing material
-\cite{ni_29xx} only and can also be seen in \cref{sec:iftx,sec:ifrx}.
+\cite{ni_29xx} only. It can also be seen in \cref{sec:iftx,sec:ifrx}.
 
 
 It is advisable to always use the latest driver versions, which are not necessarily included in
-the recent Linux distributions. Changes to byte ordering in the protocol \cite{usrp_byte} can
+the most recent Linux distributions. Changes to byte ordering in the protocol \cite{usrp_byte} can
 generate frequency artifacts in \SI{8}{\bit} mode and a bug in the configuration of the half
 band filters can lead to two tones at \SI{50}{\mega\samples\per\second} \cite{usrp_hb}.
 
@@ -220,7 +223,7 @@ band filters can lead to two tones at \SI{50}{\mega\samples\per\second} \cite{us
 Digital down conversion for RX and digital up conversion for TX are handled by two dedicated DSP chains.
 \Cref{sec:dsprx} and \cref{sec:dsptx} explain both in more detail, which have been derived from the FPGA sources at \cite{usrp_src}.
 In order to minimize noise, both chains use round to nearest with error diffusion and clipping
-for converting signals to lower bit withs. IQ samples are generated with a final bit width of
+for converting signals to lower bit widths. IQ samples are generated with a final bit width of
 \SI{16}{\bit} per channel. If the \SI{8}{\bit} line format is used, then the lower \SI{8}{\bit}
 are truncated from the sample.
 \subsubsection{DSP RX chain}
@@ -264,7 +267,7 @@ are truncated from the sample.
         \node[coordinate]                           (m18) {};       \&
         \node[dspsquare]                            (m19) {$\sum$}; \&
         \node[coordinate]                           (m110){};       \&
-        \node[dspsquare]                            (m111){CIC};    \&
+        \node[dspsquare,inner sep=3pt]              (m111){CIC};    \&
         \node[dspsquare,label=above:small]          (m112){hb};     \&
         \node[dspsquare]                            (m113){hb};     \&
         \node[dspmixer]                             (m114){};       \&
@@ -281,7 +284,7 @@ are truncated from the sample.
         \node[coordinate]                           (m26) {};       \&
         \node[coordinate]                           (m27) {};       \&
         \node[dspswitch]                            (m28) {};       \&
-        \node[dspsquare]                            (m29) {cordic}; \&
+        \node[dspsquare,inner sep=3pt]              (m29) {cordic}; \&
         \node[coordinate]                           (m210) {};   \&
         \node[coordinate]                           (m211) {};      \&
         \node[coordinate]                           (m212) {};      \&
@@ -304,7 +307,7 @@ are truncated from the sample.
         \node[coordinate]                           (m38) {};       \&
         \node[coordinate]                           (m39) {};       \&
         \node[coordinate]                           (m310){};       \&
-        \node[dspsquare]                            (m311){CIC};    \&
+        \node[dspsquare,inner sep=3pt]              (m311){CIC};    \&
         \node[dspsquare,label=below:small]          (m312){hb};     \&
         \node[dspsquare]                            (m313){hb};     \&
         \node[dspmixer]                             (m314){};       \&
@@ -404,20 +407,20 @@ are truncated from the sample.
 \end{figure}
 The RX chain (\cref{fig:rxpath}) starts with a multiplexer which allows
 interchanging the data from ADC a and ADC b. This is followed by the DC offset correction.
-The accumulator can be turned off and be set to a fixed value.
+The accumulator can be turned off and set to a fixed value.
 This allows static DC offsets as well as completely turning off the compensation. Data 
 generated by this stage has a width of \SI{18}{\bit}. IQ imbalance can be corrected by the
 next stage, which is done automatically if a calibration file is present. Calibration can be
-performed with the command \verb+uhd_cal_rx_iq_balance+\cite{usrp_cal}. This stage adds additional
-\SI{6}{\bit} for a total of \SI{24}{\bit} to the data stream. Before entering the cordic data from
-ADC a and ADC b can be interchanged again. One channel can also be zeroed out in order to process
-real valued signals the rest of the chain. The cordic uses a bit width of \SI{25}{\bit} internally and is
-implemented in rotation mode in order to be able to shift the spectrum of the incoming signal
+performed with the command \verb+uhd_cal_rx_iq_balance+\cite{usrp_cal}. This stage adds an additional
+\SI{6}{\bit}, for a total of \SI{24}{\bit}, to the data stream. Before entering the cordic, data streams from
+ADC a and ADC b can be interchanged again. One channel can also be zeroed out, in order to process
+real valued signals in the rest of the chain. The cordic uses a bit width of \SI{25}{\bit} internally and is
+implemented in rotation mode, in order to be able to shift the spectrum of the incoming signal
 digitally. This is used automatically by the host driver, if the LO is not able to tune exactly
 to the desired center frequency. It can also be used for shifting undesired frequencies out of
 the band of interest by applying an offset to the LO frequency and correcting it with the
-cordic stage. A 4 stage CIC with configurable decimation ratio, and two half band filters, which
-have a decimation ratio of 2 each, are used for down conversion. The small half band filter can
+cordic stage. A four stage CIC with configurable decimation ratio, and two half band filters, which
+have a decimation ratio of two each, are used for down conversion. The small half band filter can
 be turned off. Both half band filters are designed with the tool from Doolittle \cite{halfband}.
 After down conversion there is a scaling stage and before handing off the samples to the FIFO,
 they are clipped to \SI{16}{\bit}.
@@ -464,7 +467,7 @@ cordic or after the whole chain.
         \node[coordinate]                           (m01) {};       \&
         \node[dspsquare]                            (m02) {hb};     \&
         \node[dspsquare,label=above:small]          (m03) {hb};     \&
-        \node[dspsquare]                            (m04) {CIC};    \&
+        \node[dspsquare,inner sep=3pt]              (m04) {CIC};    \&
         \node[coordinate]                           (m05) {};       \&
         \node[dspsquare]                            (m06) {$\sum$}; \&
         \node[coordinate]                           (m07) {};       \&
@@ -485,7 +488,7 @@ cordic or after the whole chain.
         \node[coordinate]                           (m13) {};       \&
         \node[coordinate]                           (m14) {};       \&
         \node[coordinate]                           (m15) {};       \&
-        \node[dspsquare]                            (m16) {cordic}; \&
+        \node[dspsquare,inner sep=3pt]              (m16) {cordic}; \&
         \node[coordinate]                           (m17) {};       \&
         \node                                       (m18) {scale};  \&
         \node[coordinate]                           (m19) {};       \&
@@ -500,7 +503,7 @@ cordic or after the whole chain.
         \node[coordinate]                           (m21) {};       \&
         \node[dspsquare]                            (m22) {hb};     \&
         \node[dspsquare,label=below:small]          (m23) {hb};     \&
-        \node[dspsquare]                            (m24) {CIC};    \&
+        \node[dspsquare,inner sep=3pt]              (m24) {CIC};    \&
         \node[coordinate]                           (m25) {};       \&
         \node[coordinate]                           (m26) {};       \&
         \node[coordinate]                           (m27) {};       \&
@@ -592,7 +595,7 @@ The TX chain (\cref{fig:txpath}) features similar stages as the RX chain, but in
 interpolators instead of decimators. In \SI{8}{\bit} line mode the samples are first shifted by \SI{8}{\bit}.
 Because of this the samples input into the TX chain are always \SI{16}{\bit} per channel. 
 Bit widths are \SI{18}{\bit} after the half band filters and CIC, and \SI{24}{\bit} after the cordic.
-IQ balance and DC offset are automatically configured according to calibration data generated with the commands
+IQ balance and DC offset are automatically configured according to calibration data generated by the commands
 \verb+uhd_cal_tx_iq_balance+ and \verb+uhd_cal_tx_dc_offset+\cite{usrp_cal}.
 
 Custom DSP functionality can be injected in front of the complete TX chain or between
@@ -601,11 +604,11 @@ scaling and IQ balance.
 \subsection{GNU Radio}
 \label{sec:intgnu}
 GNU Radio is a software which provides a framework for creating software defined radios. It consists
-of signal processing modules which are written in C++, a flowgraph oriented framework which can be
-used from C++ and python, and the accompanying program ``GNU Radio Companion''\cite{gnuradio_grc},
+of signal processing modules, which are written in C++, a flowgraph oriented framework, which can be
+used in C++ and python, and the accompanying program ``GNU Radio Companion''\cite{gnuradio_grc},
 which provides a graphical user interface for easier flowgraph creation. Since GNU Radio comes
 with a wide variety of signal processing modules and an easy to use graphical user interface,
-even complicated old radio systems can be rebuilt without any programming knowledge \cite{isee3}.
+even analog, old, complicated radio systems can be rebuilt without any programming knowledge \cite{isee3}.
 
 Since GNU Radio and the USRP drivers (called uhd) are integrated into every
 major linux distribution, setup is as easy as installing the packages. There are
@@ -630,11 +633,11 @@ data type, {\ttfamily ID} the name of the command line argument and the name of 
 and {\ttfamily Value} an optional default. Signal processing blocks have input and/or output ports, that
 need to be connected. The flowgraph \cref{fig:grc_rx} creates a gnuradio program, that samples
 packets from an USRP source, drops the first \SI{10}{\kilo\samples} ({\ttfamily Skip Head}), and writes
-them to the file named {\ttfamily filename} ({\ttfamily File Sink}). {\ttfamily Head} stops processing after the
+them into the file named {\ttfamily filename} ({\ttfamily File Sink}). {\ttfamily Head} stops processing after the
 specified number of samples. Although most of the parameters have numerical values, they actually
 reference the parameters on top. GNU Radio Companion displays the default values of the parameters,
-if there are any given. Compiling this flowgraph creates a python script called {\ttfamily rx.py} which
-can now directly used, or adapted to requirements, that can not be met by GNU Radio Companion (e.g.
+if there are any. Compiling this flowgraph creates a python script called {\ttfamily rx.py} which
+can now be used directly, or be adapted to requirements, that can not be met by GNU Radio Companion (e.g.
 conditionally instantiating flowgraph modules).
 
 \begin{figure}[htbp]
@@ -739,35 +742,35 @@ stop processing early. Additional information on the particular modifications ar
 \cref{sec:measgnu}.
 %======================================================================
 \section{Measurement Setup}
-All the measurements and data processing have been done utilizing the following tools:
+All the measurements and the data processing have been done utilizing the following tools:
 \subsection{Mathworks Matlab}
 Matlab has been used to automate the measurements, process the raw data, and for
 initial visualization of the data. USRP control and data acquisition was planned to
-be done from matlab directly with the hardware drivers supplied by Mathworks \cite{matlab_usrp},
+be done in matlab directly with the hardware drivers supplied by Mathworks \cite{matlab_usrp},
 which proved futile, because the matlab drivers for
-USRP only provide very basic functionality. E.g. support for setting the clock to
-external is missing. Another problem has been, that matlab was too slow for processing
+USRP only provide very basic functionality, e.g. support for setting the clock to
+external is missing. Another problem was, that matlab was too slow for processing
 data at a sample rate of \SI{50}{\mega\samples\per\second}. This led to the approach of
 using GNU Radio for communicating with the USRP. Two GNU Radio flowgraphs were
 developed and modified, that write the samples to a file in memory or read them
-(see \cref{sec:measgnu}). Acompanying Matlab functions were developed that convert
+(see \cref{sec:measgnu}). Accompanying Matlab functions were developed that convert
 between the binary data and complex Matlab vectors.
 
 Because of no available VISA stack, automation of the meters was done via
 SCPI\footnote{Standard Commands for Programmable Instruments} over Ethernet and VXI-11.
-To be able to use VXI-11 without a VISA stack a python library \cite{yamamoto_vxi-11} was
+To be able to use VXI-11, without a VISA stack, a python library \cite{yamamoto_vxi-11} was
 utilized.
 \subsection{GNU Radio}
 \label{sec:measgnu}
-As meantioned in \cref{sec:intgnu} two communication scripts have been developed with GNU
+As meantioned in \cref{sec:intgnu}, two communication scripts have been developed with GNU
 Radio to write USRP samples to a file, and read samples from a file and send them to the USRP.
 Tests showed that right after starting the flowgraph there are phase errors despite a
 locked LO, which is checked by the USRP driver. Because of this the flowgraph in \cref{fig:grc_rx}
 uses a {\ttfamily Skip Head} module, which skips enough samples.
 
-Because the USRP GNU Radio Companion module has no GUI parameter to turn off DC offset
+Since the USRP GNU Radio Companion module has no GUI parameter to turn off DC offset
 compensation, the output script was modified by hand. Despite lacking some possibilities
-in the interface, it is however possible to do everything from within python.
+in the interface, it is however possible to do everything within python.
 \Cref{line:dcoff1} and \cref{line:dcoff2} in \cref{lst:rxfinal.py} turn off DC offset
 compensation by disabling the accumulator and setting the accumulator value to zero 
 (see \cref{sec:dsprx}).
@@ -776,23 +779,23 @@ Several other additions (\Cref{line:w81,line:w82,line:w83} in \cref{lst:rxfinal.
 make the flowgraph more dynamic, to support \SI{8}{\bit} and \SI{16}{\bit} mode with
 the same python script. In \SI{8}{\bit} mode an additional block in \cref{line:short}
 is added to the flowgraph, which converts the short integers from the USRP source to
-characters. This is necessary because the USRP block has a very limited choice of
+characters. This is necessary, because the USRP block has a very limited choice of
 output data formats.
 
-The transmit script is very similar to the receive script. Only differences are,
+The transmit script is very similar to the receive script. The only differences are,
 that the read file data is repeated in a loop, and an additional functionality
 allows for endless streaming, which is cancelled on receiveing a line feed on
 standard input.
 \subsection{Meters and Measurment Setup}
 A Rhode \& Schwarz SMBV 100a, and a Rhode \& Schwarz SMIQ06B were used to generate
-signals for RX measurements and as clock reference. Since the SMIQ06B posesses no
+signals for RX measurements and as clock reference. Since the SMIQ06B possesses no
 Ethernet connectivity, an Agilent E85810 GPIB Etheret bridge provided the necessary
-conversion. Power measurements were taken with an Agilent N1914A Power meter and an
+conversion. Power measurements were taken with an Agilent N1914A Power Meter and an
 Agilent E9301A Power Sensor. Network parameters and power measurements of specific
-spectrum ranges were done with a Rhode \& Schwarz ZVL. In order to not interfere
-with the high data rate connection needed by USRP it used a dedicated network interface.
+spectrum ranges were done with a Rhode \& Schwarz ZVL. In order not to interfere
+with the high data rate connection needed by USRP, it used a dedicated network interface.
 
-The TX measurement data was corrected with the S-Parameters, of the cable and
+The TX measurement data was corrected with the S-Parameters of the cable and
 attenuators, and the RX measurements by measuring the signal power arriving at
 the USRP by replacing the USRP with the power meter.
 
@@ -862,7 +865,7 @@ Since the power head can only measure signals between \SI{-60}{\deci\belm} and
 \SI{20}{\deci\belm} a \SI{6}{\deci\bel} and a \SI{10}{\deci\bel} attenuator were used,
 to bring down the signal to acceptable levels. Since the USRP shows high DC levels,
 caused by the mixer used, the RF frequency response has been measured with an offset
-of 1 MHz. DC offset correction is not an option, because this removes DC completely.
+of 1 MHz. DC offset correction is not an option, since this removes DC completely.
 
 \subsubsection{IF Frequency Response}
 \label{sec:ifsetup}
@@ -923,8 +926,8 @@ of 1 MHz. DC offset correction is not an option, because this removes DC complet
     \caption{IF frequency response measurement setup}
     \label{fig:ifsetup}
 \end{figure}
-Because of availability issues the SMIQ was used for the setup in \cref{fig:ifsetup}.
-This setup used an attenuator because of the same reasons mentioned in \ref{sec:rfsetup}.
+Because of availability issues, the SMIQ was used for the setup in \cref{fig:ifsetup}.
+This setup used an attenuator, for the same reasons mentioned in \ref{sec:rfsetup}.
 
 For TX measurement the ZVL was used, unlike in \cref{sec:rfsetup}L, to be able to isolate
 only the intended frequency.
@@ -996,21 +999,22 @@ only the intended frequency.
 TX measurement used the same setup as described in \cref{sec:ifsetup}. Multiple
 measurements with random phases were taken.
 
-For RX at first a similar measurement setup as in \cref{sec:rfsetup} was attempted,
-but it was not possible to generate a signal free from intermodulation products with
-the SMBV. With the ZVL it was verified, that those products are caused by the
+At first for RX a similar measurement setup as in \cref{sec:rfsetup} was attempted,
+but it was not possible to generate a signal free of intermodulation products with
+the SMBV. With the ZVL, it was verified, that those products are caused by the
 SMBV. This led to the setup in \cref{fig:imsetup}. This setup utilized a Mini-Circuits
 ZFRSC-183+ power splitter/combiner. Since this is a resistive power splitter, it has
 very poor isolation\cite{pwrsplit}. In order to prevent the signal generators from
 distorting the output because of this coupling the \SI{10}{\deci\bel} attenuator
 and the DC block were used.
 %======================================================================
+\clearpage
 \section{Measurement Results}
 All the circuit designations in the following sections refer to \cref{fig:usrp}.
 \subsection{RF Frequency Response}
 \subsubsection{RX}
 \label{sec:rfrx}
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
@@ -1031,7 +1035,7 @@ All the circuit designations in the following sections refer to \cref{fig:usrp}.
     \caption{Input power needed for \SI{0}{\deci\belfs}}
     \label{fig:inputfscrf}
 \end{figure}
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
@@ -1065,7 +1069,7 @@ by LNA1 and LNA2 \cite{rxlna} and the ripples by the DEMOD \cite{demod}.
 
 \subsubsection{TX}
 \label{sec:rftx}
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
@@ -1093,7 +1097,7 @@ by LNA1 and LNA2 \cite{rxlna} and the ripples by the DEMOD \cite{demod}.
 \caption{Output power, \SI{-1.94}{\deci\belfs}}
     \label{fig:outputrf08}
 \end{figure}
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
@@ -1203,7 +1207,7 @@ results can be seen in \cref{fig:outputrf08,fig:outputrf1}. AMP2 \cite{amp2} and
 \end{figure}
 An overview of the measurement results can be seen in \cref{fig:rfifrx16}. The slope and ripple
 in the RF frequency direction is uniformly distributed along the IF frequency axis.
-This results and different gain settings, which can be found in the measurement data \ref{sec:sources},
+These results and different gain settings, which can be found in the measurement data \ref{sec:sources},
 reproduce the same result as in \cref{sec:rfrx}. Since these measurements were taken without DC offset
 compensation, there is a small peak at \SI{0}{\mega\hertz}, which is caused by DEMOD \cite{demod}.
 
@@ -1212,7 +1216,7 @@ observable.
 
 \subsubsection{TX}
 \label{sec:iftx}
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
@@ -1238,7 +1242,7 @@ observable.
     \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, \SI{25}{\mega\samples\per\second}}
     \label{fig:rfiftx16}
 \end{figure}
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
@@ -1258,7 +1262,7 @@ observable.
     \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{25}{\mega\samples\per\second}, \SI{16}{\bit}}
     \label{fig:iftx}
 \end{figure}
-\begin{figure}[htbp]
+\begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
@@ -1350,7 +1354,7 @@ the intermodulation products in \cref{fig:txip3} are caused by the ADC.
 %======================================================================
 \clearpage
 \begin{appendix}
-\section*{Measurement results and Source Code}
+\section{Measurement results and Source Code}
 \label{sec:sources}
 All the raw data, processed results and sources can be found at
 \url{https://github.com/notti/usrp_measurements}.
