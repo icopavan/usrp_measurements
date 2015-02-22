@@ -8,7 +8,7 @@ function vals = dBmOgain(f, freqs, gains, ys, wire, delta)
         
     f = find(freqs==f);
     ys = reshape(mean(ys,2),11,81);
-    vals = -14-gains.'+20*log10(m./ys(:,f))-delta(f);
+    vals = -14-gains.'+mag2db(m./ys(:,f))-delta(f);
 
 end
 

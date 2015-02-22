@@ -8,7 +8,7 @@ function vals = dBmOfreq(gain, ys, wire, delta)
         
     g = gain/5 + 1;
     ys = reshape(mean(ys,2),11,81);
-    vals = -14-gain+20*log10(m./ys(g,:))-delta;
+    vals = -14-gain+mag2db(m./ys(g,:))-delta;
 
 end
 
