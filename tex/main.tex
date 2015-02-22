@@ -32,7 +32,7 @@ bookmarksopen=false
 \usepackage{pgfplots}
 
 \pgfplotsset{compat=1.11}
-\pgfplotsset{every axis plot/.append style={smooth}} 
+\pgfplotsset{every axis plot/.append style={smooth},every axis/.append style={grid=major,legend style={font=\footnotesize}}} 
 
 \usepgfplotslibrary{units}
 \pgfplotsset{unit code/.code 2 args={\si{#1#2}}}
@@ -179,6 +179,7 @@ to be provided by one of several possible daughter boards, which allow operation
 from DC to 6 GHz\cite{ettus_n2x0}. This products are also available as rebranded
 versions from NI.
 \subsection{NI USRP-2922}
+\label{sec:usrp}
 The NI USRP-2922 is a rebranded Ettus Research N210 with an SBX daughter board, which
 allows frequency ranges from \SI{400}{\mega\hertz} to \SI{4.4}{\giga\hertz}. Both RX
 and TX feature amplifiers and an attenuator to allow specifying an overall gain from
@@ -207,7 +208,7 @@ Since this overview was created according
 to the schematics in \cite{sch_sbx}, the filters LP2 and LP5 state wrong cutoff frequencies.
 Those seem to differ between the Ettus Research SBX and the NI USRP-2922, where both have an
 actual cutoff frequency of \SI{20}{\mega\hertz}. This is mentioned in the marketing material
-\cite{ni_29xx} only and can also be seen in \cref{sec:rftx}. %TODO also rfrx?
+\cite{ni_29xx} only and can also be seen in \cref{sec:iftx,sec:ifrx}.
 
 
 It is advisable to always use the latest driver versions, which are not necessarily included in
@@ -217,7 +218,7 @@ band filters can lead to two tones at \SI{50}{\mega\samples\per\second} \cite{us
 
 
 Digital down conversion for RX and digital up conversion for TX are handled by two dedicated DSP chains.
-\Cref{sec:dsprx} and \cref{sec:dsptx} explain both in more detail, which has been derived from the FPGA sources at \cite{usrp_src}.
+\Cref{sec:dsprx} and \cref{sec:dsptx} explain both in more detail, which have been derived from the FPGA sources at \cite{usrp_src}.
 In order to minimize noise, both chains use round to nearest with error diffusion and clipping
 for converting signals to lower bit withs. IQ samples are generated with a final bit width of
 \SI{16}{\bit} per channel. If the \SI{8}{\bit} line format is used, then the lower \SI{8}{\bit}
@@ -1004,133 +1005,219 @@ distorting the output because of this coupling the \SI{10}{\deci\bel} attenuator
 and the DC block were used.
 %======================================================================
 \section{Measurement Results}
+All the circuit designations in the following sections refer to \cref{fig:usrp}.
 \subsection{RF Frequency Response}
 \subsubsection{RX}
-\begin{figure}[htb]
+\label{sec:rfrx}
+\begin{figure}[htbp]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos = outer north east,
-        legend style={font=\footnotesize},
         xlabel={gain},
         ylabel={power},
         x unit={\deci\bel},
         y unit={\deci\belm},
         minor tick num = 1
         ]
-        \addplot[mark = +] table {data/rf/rx/8/dbm_400};
-        \addplot[mark = x] table {data/rf/rx/8/dbm_2400};
-        \addplot[mark = asterisk] table {data/rf/rx/8/dbm_4400};
-        \legend{\SI{400}{MHz},\SI{2.4}{GHz},\SI{4.4}{GHz}}
+        \addplot[mark = +,red] table {data/rf/rx/8/dbm_400};
+        \addlegendentry{\SI{400}{MHz}}
+        \addplot[mark = x,green] table {data/rf/rx/8/dbm_2400};
+        \addlegendentry{\SI{2.4}{GHz}}
+        \addplot[mark = asterisk,blue] table {data/rf/rx/8/dbm_4400};
+        \addlegendentry{\SI{4.4}{GHz}}
     \end{axis}
 \end{tikzpicture}
-    \caption{Input power needed for full scale}
+    \caption{Input power needed for \SI{0}{\deci\belfs}}
     \label{fig:inputfscrf}
 \end{figure}
-\begin{figure}[htb]
+\begin{figure}[htbp]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos = outer north east,
-        legend style={font=\footnotesize},
+        legend pos=north west,
+        legend columns=2,
         ylabel={gain},
         xlabel={frequency},
         y unit={\deci\bel},
         x unit={\hertz},
         change x base,
         x SI prefix=giga,
-        width=12cm,
-        height=5cm,
-        scale only axis,
+        width=\linewidth,
+        height=7cm,
         minor tick num = 1
         ]
-        \addplot[mark = +] table {data/rf/rx/8/f_0};
-        \addplot[mark = x] table {data/rf/rx/8/f_15};
-        \addplot[mark = asterisk] table {data/rf/rx/8/f_30};
-        \legend{\SI{0}{dBm},\SI{15}{dBm},\SI{30}{dBm}}
+        \addplot[red] table {data/rf/rx/8/f_0};
+        \addlegendentry{\SI{0}{dBm}}
+        \addplot[green] table {data/rf/rx/8/f_15};
+        \addlegendentry{\SI{15}{dBm}}
+        \addplot[blue] table {data/rf/rx/8/f_30};
+        \addlegendentry{\SI{30}{dBm}}
     \end{axis}
 \end{tikzpicture}
-    \caption{Gain needed for fullscale}
+    \caption{Gain needed for \SI{0}{\deci\belfs}}
     \label{fig:gainfscrf}
 \end{figure}
-\begin{itemize}
-    \item describe the drop from 400 -> 4.4Ghz (caused by amps)
-    \item 31.5dB max
-\end{itemize}
-\subsubsection{TX}
-\begin{figure}[htb]
-    \centering
-\begin{tikzpicture}
-    \begin{axis}[
-        legend pos = outer north east,
-        legend style={font=\footnotesize},
-        ylabel={power},
-        xlabel={frequency},
-        y unit={\deci\belm},
-        x unit={\hertz},
-        change x base,
-        x SI prefix=giga,
-        width=12cm,
-        height=5cm,
-        scale only axis,
-        minor tick num = 1,
-        ymin = -25
-        ]
-        \addplot[mark = +] table {data/rf/tx/0.8/0.0};
-        \addplot[mark = x] table {data/rf/tx/0.8/10.0};
-        \addplot[mark = asterisk] table {data/rf/tx/0.8/20.0};
-        \addplot[mark = triangle] table {data/rf/tx/0.8/30.0};
-        \addplot[mark = 10-pointed star] table {data/rf/tx/0.8/31.5};
-        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
-    \end{axis}
-\end{tikzpicture}
-    \caption{Output power, 0.8fsc}
-    \label{fig:outputrf08}
-\end{figure}
-\begin{figure}[htb]
-    \centering
-\begin{tikzpicture}
-    \begin{axis}[
-        legend pos = outer north east,
-        legend style={font=\footnotesize},
-        ylabel={power},
-        xlabel={frequency},
-        y unit={\deci\belm},
-        x unit={\hertz},
-        change x base,
-        x SI prefix=giga,
-        width=12cm,
-        height=5cm,
-        scale only axis,
-        minor tick num = 1,
-        ymin = -25
-        ]
-        \addplot[mark = +] table {data/rf/tx/1.0/0.0};
-        \addplot[mark = x] table {data/rf/tx/1.0/10.0};
-        \addplot[mark = asterisk] table {data/rf/tx/1.0/20.0};
-        \addplot[mark = triangle] table {data/rf/tx/1.0/30.0};
-        \addplot[mark = 10-pointed star] table {data/rf/tx/1.0/31.5};
-        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
-    \end{axis}
-\end{tikzpicture}
-    \caption{Output power, 1fsc}
-    \label{fig:outputrf1}
-\end{figure}
-\begin{itemize}
-    \item describe where stuff is coming from
-\end{itemize}
-\subsection{IF Frequency Response}
+Measurement results are provided in \cref{fig:inputfscrf,fig:gainfscrf}.
+\Cref{fig:inputfscrf} reflects the maximum gain setting of \SI{31.5}{\deci\bel}.
+The loss in gain over the frequency range in \cref{fig:gainfscrf} is mainly caused
+by LNA1 and LNA2 \cite{rxlna} and the ripples by the DEMOD \cite{demod}.
+
 \subsubsection{TX}
 \label{sec:rftx}
-\begin{itemize}
-    \item 8Bit vs 16 Bit
-\end{itemize}
+\begin{figure}[htbp]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        legend pos = south west,
+        legend columns = -1,
+        ylabel={power},
+        xlabel={frequency},
+        y unit={\deci\belm},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
+        width=\linewidth,
+        height=7cm,
+        minor tick num = 1,
+        ymin = -25
+        ]
+        \addplot[red] table {data/rf/tx/0.8/0.0};
+        \addplot[green] table {data/rf/tx/0.8/10.0};
+        \addplot[blue] table {data/rf/tx/0.8/20.0};
+        \addplot[black] table {data/rf/tx/0.8/30.0};
+        \addplot[violet] table {data/rf/tx/0.8/31.5};
+        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
+    \end{axis}
+\end{tikzpicture}
+\caption{Output power, \SI{-1.94}{\deci\belfs}}
+    \label{fig:outputrf08}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        legend pos = south west,
+        legend columns = -1,
+        legend style={font=\footnotesize},
+        ylabel={power},
+        xlabel={frequency},
+        y unit={\deci\belm},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
+        width=\linewidth,
+        height=7cm,
+        minor tick num = 1,
+        ymin = -25
+        ]
+        \addplot[red] table {data/rf/tx/1.0/0.0};
+        \addplot[green] table {data/rf/tx/1.0/10.0};
+        \addplot[blue] table {data/rf/tx/1.0/20.0};
+        \addplot[black] table {data/rf/tx/1.0/30.0};
+        \addplot[violet] table {data/rf/tx/1.0/31.5};
+        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
+    \end{axis}
+\end{tikzpicture}
+    \caption{Output power, \SI{0}{\deci\belfs}}
+    \label{fig:outputrf1}
+\end{figure}
+Measurements were done at \SI{0}{\deci\belfs} and \SI{-1.94}{\deci\belfs}. The
+results can be seen in \cref{fig:outputrf08,fig:outputrf1}. AMP2 \cite{amp2} and AMP3
+\cite{amp3} are the main cause for the loss in gain over the frequency range.
+
+\subsection{IF Frequency Response}
+\subsubsection{RX}
+\label{sec:ifrx}
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        ylabel={if frequency},
-        xlabel={rf frequency},
+        ylabel={IF frequency},
+        xlabel={RF frequency},
+        zlabel={input power},
+        xlabel style={sloped},
+        ylabel style={sloped},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
+        y unit={\hertz},
+        change y base,
+        y SI prefix=mega,
+        z unit={\deci\belm},
+        z dir=reverse,
+        width=\linewidth,
+        height=7cm,
+        minor tick num = 1,
+        ]
+        \addplot3[surf,mesh/cols=41] table {data/if/rx/mesh16_15.0};
+    \end{axis}
+\end{tikzpicture}
+    \caption{Input power needed for \SI{0}{\deci\belfs}, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, \SI{25}{\mega\samples\per\second}}
+    \label{fig:rfifrx16}
+\end{figure}
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        legend style={at={(0.5,0.97)},anchor=north},
+        xlabel={IF frequency},
+        ylabel={input power},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=mega,
+        y unit={\deci\belm},
+        width=\linewidth,
+        height=5cm,
+        minor tick num = 1,
+        ]
+        \addplot[red] table {data/if/rx/16_2000_15.0};
+        \addlegendentry{\SI{16}{\bit}}
+        \addplot[green] table {data/if/rx/825_2000_15.0};
+        \addlegendentry{\SI{8}{\bit}}
+    \end{axis}
+\end{tikzpicture}
+    \caption{Input power needed for \SI{0}{\deci\belfs}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{25}{\mega\samples\per\second}}
+    \label{fig:ifrx25}
+\end{figure}
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        legend style={at={(0.5,0.97)},anchor=north},
+        xlabel={IF frequency},
+        ylabel={input power},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=mega,
+        y unit={\deci\belm},
+        width=\linewidth,
+        height=5cm,
+        minor tick num = 1,
+        ]
+        \addplot[red] table {data/if/rx/8_2000_15.0};
+        \addlegendentry{\SI{16}{\bit}}
+    \end{axis}
+\end{tikzpicture}
+    \caption{Input power needed for \SI{0}{\deci\belfs}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{25}{\mega\samples\per\second}}
+    \label{fig:ifrx50}
+\end{figure}
+An overview of the measurement results can be seen in \cref{fig:rfifrx16}. The slope and ripple
+in the RF frequency direction is uniformly distributed along the IF frequency axis.
+This results and different gain settings, which can be found in the measurement data \ref{sec:sources},
+reproduce the same result as in \cref{sec:rfrx}. Since these measurements were taken without DC offset
+compensation, there is a small peak at \SI{0}{\mega\hertz}, which is caused by DEMOD \cite{demod}.
+
+In \ref{fig:ifrx50} the effect of the \SI{20}{\mega\hertz} filter mentioned in \cref{sec:usrp} is
+observable.
+
+\subsubsection{TX}
+\label{sec:iftx}
+\begin{figure}[htbp]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        ylabel={IF frequency},
+        xlabel={RF frequency},
         zlabel={output power},
         xlabel style={sloped},
         ylabel style={sloped},
@@ -1141,62 +1228,65 @@ and the DC block were used.
         change y base,
         y SI prefix=mega,
         z unit={\deci\belm},
-        width=12cm,
-        height=5cm,
-        scale only axis,
+        width=\linewidth,
+        height=7cm,
         minor tick num = 1,
         ]
         \addplot3[surf,mesh/cols=41] table {data/if/tx/mesh16_15.0};
     \end{axis}
 \end{tikzpicture}
-    \caption{RF/IF TX, 16 Bit, \SI{15.0}{\deci\bel} gain}
+    \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, \SI{25}{\mega\samples\per\second}}
     \label{fig:rfiftx16}
 \end{figure}
-
-\begin{figure}[htb]
+\begin{figure}[htbp]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos = outer north east,
-        xlabel={if frequency},
+        xlabel={IF frequency},
         ylabel={output power},
         x unit={\hertz},
         change x base,
         x SI prefix=mega,
         y unit={\deci\belm},
-        width=12cm,
+        width=\linewidth,
         height=5cm,
-        scale only axis,
         minor tick num = 1,
         ]
-        \addplot[mark = +] table {data/if/tx/16_2000_15.0};
-        \addplot[mark = star] table {data/if/tx/8_2000_15.0};
-        \node (rechtsoben) at (axis description cs:1,1) {};
-        \legend{16 Bit,8 Bit}
-    \end{axis}
-    \begin{axis}[
-        at={(rechtsoben)},
-        anchor=north east,
-        scale only axis,
-        minor tick num = 1,
-        axis background/.style={fill=white},
-        tick label style={font=\tiny},
-        xmin = -3e6,
-        xmax = 3e6,
-        ymax = -8.6,
-        ymin = -9.8,
-        scaled x ticks={base 10:-6},
-        xtick scale label code/.code={},
-        width = 2cm
-        ]
-        \addplot[mark = +] table {data/if/tx/16_2000_15.0};
-        \addplot[mark = star] table {data/if/tx/8_2000_15.0};
+        \addplot[red] table {data/if/tx/16_2000_15.0};
     \end{axis}
 \end{tikzpicture}
-    \caption{IF TX, \SI{15.0}{\deci\bel} gain, cfreq \SI{2}{\giga\hertz}}
+    \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{25}{\mega\samples\per\second}, \SI{16}{\bit}}
     \label{fig:iftx}
 \end{figure}
+\begin{figure}[htbp]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel={IF frequency},
+        ylabel={output power},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=mega,
+        y unit={\deci\belm},
+        width=\linewidth,
+        height=5cm,
+        minor tick num = 1,
+        ]
+        \addplot[red] table {data/if/tx/8_2000_15.0};
+    \end{axis}
+\end{tikzpicture}
+    \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{50}{\mega\samples\per\second}, \SI{8}{\bit}}
+    \label{fig:iftx50}
+\end{figure}
+The overview in \cref{fig:rfiftx16} has the same slope and ripple
+in the RF frequency direction as \cref{sec:rftx}. Both are uniformly
+distributed along the IF frequency axis. \cref{fig:iftx} features only the \SI{16}{\bit}
+measurement, because the \SI{8}{\bit} measurement produced the same result.
 
+In \ref{fig:iftx50} the effect of the \SI{20}{\mega\hertz} filter mentioned in \cref{sec:usrp} is
+observable.
+
+\clearpage
 \subsection{Intermodulation Properties}
 \subsubsection{RX}
 \begin{itemize}
@@ -1214,7 +1304,6 @@ and the DC block were used.
         x unit={\deci\belm},
         width=12cm,
         height=5cm,
-        scale only axis,
         minor tick num = 1,
         ]
         \addplot[only marks, mark = +] table {data/ip3/rx/la};
@@ -1244,7 +1333,6 @@ and the DC block were used.
         y unit={\deci\belm},
         width=12cm,
         height=5cm,
-        scale only axis,
         minor tick num = 1,
         ]
         \addplot[only marks, mark = +] table {data/ip3/tx/la};
@@ -1261,8 +1349,19 @@ and the DC block were used.
 
 %======================================================================
 \clearpage
+\begin{appendix}
+\section*{Measurement results and Source Code}
+\label{sec:sources}
+All the raw data, processed results and sources can be found at
+\url{https://github.com/notti/usrp_measurements}.
+\section*{Copyright}
+This work is licensed under the Creative Commons Attribution 4.0 International
+License. To view a copy of this license, visit
+\url{http://creativecommons.org/licenses/by/4.0/} or send a letter to Creative
+Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 \listoffigures
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,literature}
+\end{appendix}
 
 \end{document}
