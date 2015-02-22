@@ -993,7 +993,8 @@ only the intended frequency.
     \caption{Intermodulation properties measurement setup}
     \label{fig:imsetup}
 \end{figure}
-TX measurement used the same setup as described in \cref{sec:ifsetup}.
+TX measurement used the same setup as described in \cref{sec:ifsetup}. Multiple
+measurements with random phases were taken.
 
 For RX at first a similar measurement setup as in \cref{sec:rfsetup} was attempted,
 but it was not possible to generate a signal free from intermodulation products with
@@ -1098,7 +1099,6 @@ by LNA1 and LNA2 \cite{rxlna} and the ripples by the DEMOD \cite{demod}.
     \begin{axis}[
         legend pos = south west,
         legend columns = -1,
-        legend style={font=\footnotesize},
         ylabel={power},
         xlabel={frequency},
         y unit={\deci\belm},
@@ -1289,63 +1289,63 @@ observable.
 \clearpage
 \subsection{Intermodulation Properties}
 \subsubsection{RX}
-\begin{itemize}
-    \item probably caused by ADC
-\end{itemize}
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos = outer north east,
-        legend style={font=\footnotesize},
+        legend pos = south east,
         ylabel={output power},
         xlabel={input power},
         y unit={\deci\belfs},
         x unit={\deci\belm},
-        width=12cm,
-        height=5cm,
+        width=\linewidth,
+        height=6cm,
         minor tick num = 1,
         ]
         \addplot[only marks, mark = +] table {data/ip3/rx/la};
         \addplot[only marks, mark = x] table {data/ip3/rx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/rx/pim3};
-        \addplot[domain = -93:-35, samples = 201,dotted] {1*x+33.0765};
-        \addplot[domain = -93:-35, samples = 201,loosely dotted] {3*x+111.2541};
+        \addplot[domain = -93:-35, samples = 201,green] {1*x+33.0765};
+        \addplot[domain = -93:-35, samples = 201,red] {3*x+111.2541};
         \legend{$out$,$IM_3$,$IP_3$}
     \end{axis}
 \end{tikzpicture}
     \caption{RX IP3}
     \label{fig:rxip3}
 \end{figure}
+Stepping the gain did not result in noticeable intermodulation products.
+Because of this the measurement was done at a fixed gain setting of
+\SI{31.5}{\deci\bel}. This also means that the intermodulation products
+in \cref{fig:rxip3} are caused by the DAC.
 \subsubsection{TX}
-\begin{itemize}
-    \item gain stepping did not work; nor stepping zvl -> probably caused by ADC
-\end{itemize}
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos = outer north east,
-        legend style={font=\footnotesize},
+        legend pos = south east,
         ylabel={output power},
         xlabel={input power},
         x unit={\deci\belfs},
         y unit={\deci\belm},
-        width=12cm,
-        height=5cm,
+        width=\linewidth,
+        height=6cm,
         minor tick num = 1,
         ]
         \addplot[only marks, mark = +] table {data/ip3/tx/la};
         \addplot[only marks, mark = x] table {data/ip3/tx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/tx/pim3};
-        \addplot[domain = -27:17, samples = 201,dotted] {1*x-4.2330};
-        \addplot[domain = -27:17, samples = 201,loosely dotted] {3*x-33.6197};
+        \addplot[domain = -27:17, samples = 201,green] {1*x-4.2330};
+        \addplot[domain = -27:17, samples = 201,red] {3*x-33.6197};
         \legend{$out$,$IM_3$,$IP_3$}
     \end{axis}
 \end{tikzpicture}
     \caption{TX IP3}
     \label{fig:txip3}
 \end{figure}
+Stepping the gain or changing the settings on the ZVL did not result
+in intermodulation products. Because of this the measurement was done
+at a fixed gain setting of \SI{20}{\deci\bel}. This also means that
+the intermodulation products in \cref{fig:txip3} are caused by the ADC.
 
 %======================================================================
 \clearpage
