@@ -11,6 +11,7 @@
 
 \usepackage[cmex10]{amsmath}
 \usepackage{amssymb}
+\usepackage{gensymb}
 \usepackage{listings}
 \usepackage{tocloft}
 \usepackage{subcaption}
@@ -38,7 +39,10 @@ bookmarksopen=false
 \pgfplotsset{unit code/.code 2 args={\si{#1#2}}}
 
 \usepackage{tikz}
-\usetikzlibrary{dsp,chains,fit,matrix}
+\usetikzlibrary{dsp,chains,fit,matrix,positioning,scopes,calc,backgrounds,arrows,decorations.pathmorphing}
+\usepackage{circuitikz}
+
+\include{rfsymbols}
 
 \makeatletter
 \pgfdeclareshape{dspswitchshape}{%
@@ -183,6 +187,99 @@ from DC to 6 GHz\cite{ettus_n2x0}. These products are also available as rebrande
 versions from NI.
 \subsection{NI USRP-2922}
 \label{sec:usrp}
+\begin{figure}[htb]
+\resizebox{\linewidth}{!}{
+\begin{tikzpicture}[node distance=0.6]
+    \tikzstyle{every node}=[font=\footnotesize]
+    \draw node[dspnodeopen,label=above:RX] (rx) {};
+    \draw node[amp,right=of rx,label=above:LNA1] (lna1) {};
+    \draw node[altswitch,right=of lna1,anchor=B2,label=below:SW2,rotate=180] (sw2) {};
+    \draw node[vattenuator,right=of sw2.west,label={[fill=white]above:ATT1}] (att1) {};
+    \draw node[amp,right=of att1,label=above:LNA2] (lna2) {};
+    \draw node[iqmix,right=of lna2,label=below:DEMOD] (demod) {};
+    \draw node[lowpass,right=of demod.north east,label=above:LP2,yshift=1mm] (lp2a) {};
+    \draw node[lowpass,right=of demod.south east,label=below:\scriptsize\SI{20}{\mega\hertz},yshift=-1mm] (lp2b) {};
+    \draw node[amp,right=of lp2a,label=above:AMP1] (amp1a) {};
+    \draw node[amp,right=of lp2b] (amp1b) {};
+    \draw node[lowpass,right=of amp1a,label=above:LP3] (lp3a) {};
+    \draw node[lowpass,right=of amp1b,label=below:\scriptsize\SI{50}{\mega\hertz}] (lp3b) {};
+    \draw node[adc,right=of lp3a,label=above:ADC] (adca) {};
+    \draw node[adc,right=of lp3b] (adcb) {};
+    \draw node[chswitch,above=1.5 of demod,rotate=90,anchor=A2] (sw1) {};
+    \draw node[rotate=90,anchor=south] at (sw1.north) {SW1};
+    \draw node[lowpass,left=1 of sw1.north,rotate=90,anchor=south] (lp1) {};
+    \draw node[rotate=90,anchor=south] at (lp1.north) {LP1};
+    \draw node[rotate=90,anchor=north] at (lp1.south) {\scriptsize\SI{1.2}{\giga\hertz}};
+    \draw node[pll,above=1.8 of lp3a,label=above:SYNTH1] (synth1) {};
+    
+    \draw node[dspnodeopen,label=above:TX/RX,below=3.5 of rx] (tx) {};
+    \draw node[altswitch,right=of tx,label=above:SW3] (sw3) {};
+    \draw ($(sw3)!.5!(sw2)$) node[amp,rotate=90] (lna3) {};
+    \draw node[rotate=90,anchor=south] at (lna3.north) {LNA3};
+    \draw node[lowpass,right=of sw3.B2,label=above:LP4,label=below:\scriptsize\SI{5.8}{\giga\hertz}] (lp4) {};
+    \draw node[amp,right=of lp4,rotate=180,label=below:AMP2,anchor=B] (amp2) {};
+    \draw node[vattenuator,right=of amp2.A,label={[fill=white]above:ATT2}] (att2) {};
+    \draw node[amp,right=of att2,rotate=180,label=below:AMP3,anchor=B] (amp3) {};
+    \draw node[attenuator,right=of amp3.A,label=above:ATT3] (att3) {};
+    \draw node[iqmixdown,right=of att3,label=above:MOD] (mod) {};
+    \draw node[lowpass,right=of mod.north east,label=above:LP5,yshift=1mm] (lp5a) {};
+    \draw node[lowpass,right=of mod.south east,label=below:\scriptsize\SI{20}{\mega\hertz},yshift=-1mm] (lp5b) {};
+    \draw node[dac,right=of lp5a,label=above:DAC] (daca) {};
+    \draw node[dac,right=of lp5b] (dacb) {};
+    \draw node[chswitch,below=1.5 of mod,rotate=90,anchor=B2] (sw4) {};
+    \draw node[rotate=90,anchor=south] at (sw4.north) {SW4};
+    \draw node[lowpass,left=1 of sw4.north,rotate=90,anchor=south] (lp6) {};
+    \draw node[rotate=90,anchor=south] at (lp6.north) {LP1};
+    \draw node[rotate=90,anchor=north] at (lp6.south) {\scriptsize\SI{1.2}{\giga\hertz}};
+    \draw node[pll,below=1.8 of lp5b,label=above:SYNTH2] (synth2) {};
+
+
+    \draw (rx) -- (lna1) -- (sw2.B2);
+    \draw (sw2.A1) -- (att1) -- (lna2) -- (demod);
+    \draw (demod.B1) -| ($(demod)!.5!(lp2a)$) |- (lp2a) -- (amp1a) -- (lp3a);
+    \draw (lp3a) [decoration={markings,mark=at position 0.7 with {\arrow{triangle 45}}},postaction={decorate}] -- (adca.A);
+    \draw (demod.B2) -| ($(demod)!.5!(lp2b)$) |- (lp2b) -- (amp1b) -- (lp3b);
+    \draw (lp3b) [decoration={markings,mark=at position 0.7 with {\arrow{triangle 45}}},postaction={decorate}] -- (adcb.A);
+    \draw (demod.C1) -- (sw1.A2);
+    \draw (sw1.A1) |- ($(lp1.A) - (0,0.4)$) -- (lp1.A);
+    \draw (sw1.B1) |- ($(lp1.B) + (0,0.4)$) -- (lp1.B);
+    \draw (sw1.B2) |- (synth1);
+
+    \draw (tx) -- (sw3);
+    \draw (sw3.B1) -| (lna3) |- (sw2.B1);
+    \draw (sw3.B2) -- (lp4) -- (amp2) -- (amp2) -- (att2) -- (amp3) -- (att3) -- (mod);
+    \draw (mod.B1) -| ($(mod)!.5!(lp5a)$) |- (lp5a);
+    \draw (lp5a) [decoration={markings,mark=at position 0.3 with {\arrowreversed{triangle 45}}},postaction={decorate}] -- (daca.A);
+    \draw (mod.B2) -| ($(mod)!.5!(lp5b)$) |- (lp5b);
+    \draw (lp5b) [decoration={markings,mark=at position 0.3 with {\arrowreversed{triangle 45}}},postaction={decorate}] -- (dacb.A);
+    \draw (mod.C1) -- (sw4.B2);
+    \draw (sw4.A1) |- ($(lp6.A) - (0,0.4)$) -- (lp6.A);
+    \draw (sw4.B1) |- ($(lp6.B) + (0,0.4)$) -- (lp6.B);
+    \draw (sw4.A2) |- (synth2);
+
+    \draw ($(adca)!.5!(dacb) + (3,0)$) node[draw,minimum size=2cm,label=below:FPGA] (fpga) {};
+
+    \draw (adca.B) -| ($(adca.B)!.75!(fpga.west) + (0,1cm)$) |- ([yshift=1cm]fpga);
+    \draw (adcb.B) -| ($(adcb.B)!.25!(fpga.west)$) |- ([yshift=.5cm]fpga);
+    \draw (daca.B) -| ($(daca.B)!.25!(fpga.west)$) |- ([yshift=-.5cm]fpga);
+    \draw (dacb.B) -| ($(dacb.B)!.75!(fpga.west) - (0,1cm)$) |- ([yshift=-1cm]fpga);
+
+    \draw ($(adca.A)!.5!(synth1.B) + (0,3cm)$) node[coordinate] (bordertop) {} [dashed] -- ($(dacb.A)!.5!(synth2.B) - (0,3cm)$) node[coordinate] (borderbottom) {};
+    \draw (synth1.B) [decoration={markings,mark=at position 0.5 with {\arrowreversed{triangle 45}}},postaction={decorate}] -- (bordertop |- synth1.B) node[anchor=west] {\SI{100}{\mega\hertz}};
+    \draw (synth2.B) [decoration={markings,mark=at position 0.5 with {\arrowreversed{triangle 45}}},postaction={decorate}] -- (borderbottom |- synth2.B) node[anchor=west] {\SI{100}{\mega\hertz}};
+    \draw (borderbottom) node[anchor=south east] {\bf SBX};
+    \draw (borderbottom) node[anchor=south west] {\bf N2xx};
+
+    \begin{scope}[on background layer]
+        \draw [dotted,decorate,decoration=random steps,segment length=2mm] ($(att1) + (0,2cm)$) -- (att1) ..controls +(0,-2cm) and ++(0,2cm) .. (att2) -- ($(att2) - (0,2cm)$) node[coordinate] (splitbottom) {};
+    \end{scope}
+    \draw (splitbottom) node[anchor=south east] {\footnotesize Part A};
+    \draw (splitbottom) node[anchor=south west] {\footnotesize Part B};
+\end{tikzpicture}
+}
+    \caption{Overview of the hardware on the N210 circuit board and SBX circuit board.}
+    \label{fig:usrp}
+\end{figure}
 The NI USRP-2922 is a rebranded Ettus Research N210 with an SBX daughter board, which
 allows frequency ranges from \SI{400}{\mega\hertz} to \SI{4.4}{\giga\hertz}. Both RX
 and TX feature amplifiers and an attenuator to allow specifying an overall gain from
@@ -195,18 +292,6 @@ GBit network interface. This limits the maximum sampling rate for \SI{16}{\bit} 
 \SI{25}{\mega\samples\per\second} and \SI{50}{\mega\samples\per\second} for \SI{8}{\bit}.
 A detailed overview can be seen in \cref{fig:usrp}. Galler's master's thesis \cite{flo}
 gives a more in depth description of the analog frontend and the FPGA board.
-\begin{figure}[htb]
-    \begin{subfigure}{0.5\linewidth}
-        \centering
-        \includegraphics[scale=0.5]{overall}
-    \end{subfigure}
-    \begin{subfigure}{0.5\linewidth}
-        \centering
-        \includegraphics[scale=0.5]{sbx}
-    \end{subfigure}
-    \caption{Overview of the hardware on the N210 circuit board and SBX circuit board\cite{flo}.}
-    \label{fig:usrp}
-\end{figure}
 Since this overview was created according
 to the schematics in \cite{sch_sbx}, the filters LP2 and LP5 state wrong cutoff frequencies.
 Those seem to differ between the Ettus Research SBX and the NI USRP-2922, where both have an
