@@ -39,7 +39,7 @@ bookmarksopen=false
 \pgfplotsset{unit code/.code 2 args={\si{#1#2}}}
 
 \usepackage{tikz}
-\usetikzlibrary{dsp,chains,fit,matrix,positioning,scopes,calc,backgrounds,arrows,decorations.pathmorphing}
+\usetikzlibrary{dsp,chains,fit,matrix,positioning,scopes,calc,backgrounds,arrows,decorations.pathmorphing,shapes.misc}
 \usepackage{circuitikz}
 
 \include{rfsymbols}
@@ -96,9 +96,11 @@ bookmarksopen=false
       \pgfusepath{fill,stroke}
     }
 }
+\makeatother
 \tikzset{dspswitch/.style={shape=dspswitchshape,draw,align=center,text depth=0.3em,text height=1em,inner sep=0pt,
          line cap=round,line join=round,line width=\dsplinewidth,minimum size=\dspsquareblocksize}}
-\makeatother
+
+\tikzset{bitwidth/.style n args={2}{strike out,draw,label={[label distance=-1mm]#1:\tiny#2},scale=0.5}}
 
 \usepgfplotslibrary{external}
 \tikzexternalize[mode=list and make]
@@ -129,6 +131,9 @@ captionpos=b,escapeinside={(*}{*)}}
 \newacronym{lo}{LO}{local oscillator}
 \newacronym{pll}{PLL}{phase-locked loop}
 \newacronym{lna}{LNA}{low noise amplifier}
+\newacronym{dc}{DC}{direct current}
+\newacronym{ac}{AC}{alternating current}
+\newacronym{iq}{IQ}{in-phase/quadrature-phase}
 \makeglossaries
 
 \begin{document}
@@ -199,9 +204,9 @@ in the device. Both contain \SI{100}{\mega\samples\per\second} dual \gls{adc},
 \SI{400}{\mega\samples\per\second} dual \gls{dac}, Xilinx Spartan
 3A-DSP \gls{fpga}, and Gigabit Ethernet connectivity to stream data. The analog part is
 provided by an interchangable family of daughter boards, which allow operation from
-\SI{0}{\hertz} to \SI{6}{\giga\hertz}\cite{ettus_n2x0}. These products are also available as rebranded
+\gls{dc} to \SI{6}{\giga\hertz}\cite{ettus_n2x0}. These products are also available as rebranded
 versions from \gls{ni}.
-\subsection{\glsentryshort{ni} \glsentryshort{usrp}-2922}
+\subsection{\Glsentryshort{ni} \Glsentryshort{usrp}-2922}
 \label{sec:usrp}
 \begin{figure}[htb]
 \resizebox{\linewidth}{!}{
@@ -307,12 +312,14 @@ As can be seen in \cref{fig:usrp} the overall layout consists of an independent 
 Both paths feature independent \glspl{lo} which consist of a \gls{pll} (SYNTH1/2) and a low
 pass filter (LP1/6), which can be activated with SW1 to suppress harmonics\cite{flo}. The
 \gls{pll} synthesizes the configured frequency from the \SI{100}{\mega\hertz} clock provided
-by the N210 according to \cref{eq:frequency}\cite{synth}.
+by the N210 according to \cref{eq:frequency}\cite{synth}. This reference is either generated
+by the N210, or can be provided externally.
 \begin{equation}
 \label{eq:frequency}
 f_{out} = \underbrace{\SI{100}{\mega\hertz} \cdot \frac{1 + D}{R \cdot (1 + T)}}_\text{input stage} \cdot \overbrace{\left(INT + \frac{FRAC}{MOD}\right)}^\text{RF N divider} \cdot \underbrace{\frac{1}{out}}_\text{output stage}
 \end{equation}
-$D$ represents the frequency doubler and $T$ the divide-by-two block at the reference input. Both can
+$f_{out}$ is phase aligned with the reference clock. $D$ represents the frequency doubler
+and $T$ the divide-by-two block at the reference input. Both can
 be either one or zero. $R$ is the preset divide ratio and can be set to values from 1 to 1023.
 Those three variables control the input stage and allow dividing the input frequency before multiplying
 it. The multiplication can be changed using $INT$ ($23$ to $65535$), $MOD$ ($2$ to $4095$)
@@ -330,18 +337,18 @@ the amplifiers this results in an adjustable gain range of \SI{0}{\deci\bel} to 
 The \gls{tx} signal path also follows a superheterodyne design consisting of a quadrature
 modulator (MOD), amplifiers (AMP2, AMP3), the same variable attenuator as has been used in
 the \gls{rx} path (ATT2), and a lowpass filter, to prevent harmonics (LP4). LP5 is as an
-anti aliasing filter, which is needed because auf the analog-to-digital conversion.
+anti aliasing filter, which is needed because of the analog-to-digital conversion.
 
 According to \cite{sch_sbx} LP2 and LP5 should have a cutoff frequency of \SI{40}{\mega\hertz},
 but the \gls{ni} version uses \SI{20}{\mega\hertz} filters\cite{ni_29xx}.
 
-Digital to analog and analog to digital conversion is handled by the N210 board at a fixed sampling rate of
+Digital-to-analog and analog-to-digital conversion is handled by the N210 board at a fixed sampling rate of
 \SI{100}{\mega\samples\per\second}. Samples can be transferred to and from the device via the
 \si{\giga\bit} network interface. This limits the maximum sampling rate for \SI{16}{\bit} to
 \SI{25}{\mega\samples\per\second} and \SI{50}{\mega\samples\per\second} for \SI{8}{\bit}.
 
-It has been observed, that always the latest driver versions need to be used. Those aren't
-necessarily included in the most recent versions of major Linux distributions. Changes to
+It has been observed, that always the latest driver version needs to be used. Those aren't
+necessarily included in the most recent releases of major Linux distributions. Changes to
 byte ordering in the protocol \cite{usrp_byte} can
 generate frequency artifacts in \SI{8}{\bit} mode and a bug in the configuration of the half
 band filters can lead to two tones at \SI{50}{\mega\samples\per\second} \cite{usrp_hb}.
@@ -349,12 +356,14 @@ band filters can lead to two tones at \SI{50}{\mega\samples\per\second} \cite{us
 Digital down conversion for \gls{rx} and digital up conversion for \gls{tx} are handled
 by two dedicated \gls{dsp} chains.
 \Cref{sec:dsprx} and \cref{sec:dsptx} explain both in more detail. Those details have been derived
-from the FPGA sources at \cite{usrp_src}.
+from the \gls{fpga} sources at \cite{usrp_src}.
 In order to minimize noise, both chains use round to nearest with error diffusion and clipping
 for converting signals to lower bit widths. The samples generated by the dsp chain have a final
 bit width of \SI{16}{\bit} per channel. If the \SI{8}{\bit} line format is used, then the
 lower \SI{8}{\bit} are truncated from the sample.
-\subsubsection{DSP RX chain}
+
+
+\subsubsection{\Glsentryshort{dsp} \Glsentryshort{rx} chain}
 \label{sec:dsprx}
 \begin{figure}[htb]
     \centering
@@ -375,7 +384,7 @@ lower \SI{8}{\bit} are truncated from the sample.
         \node[coordinate]                           (m00) {};       \&
         \node[coordinate]                           (m01) {};       \&
         \node[coordinate]                           (m02) {};       \&
-        \node[dspsquare]                            (m03) {$\sum$}; \&
+        \node[dspsquare,label=above:\tiny\SI{38}{\bit}](m03) {$\sum$}; \&
         \node[coordinate]                           (m04) {};       \&
         \node[coordinate]                           (m05) {};       \&
         \node[dspmixer]                             (m06) {};       \&
@@ -384,10 +393,10 @@ lower \SI{8}{\bit} are truncated from the sample.
         \node                                       (m09) {phase};  \\
         %------------------------------------------------------------
         \&
-        \node[dspnodeopen,dsp/label=above]          (m10) {adc\_a}; \&
+        \node[dspnodeopen,dsp/label=above]          (m10) {ADC a}; \&
         \node[coordinate]                           (m11) {};       \&
         \node[coordinate]                           (m12) {};       \&
-        \node[dspadder,label=100:{-}]               (m13) {};      \&
+        \node[dspadder,label={[label distance=-1mm]100:{-}}](m13) {};      \&
         \node[dspnodefull]                          (m14) {};       \&
         \node[dspnodefull]                          (m15) {};       \&
         \node[dspadder]                             (m16) {};       \&
@@ -395,7 +404,7 @@ lower \SI{8}{\bit} are truncated from the sample.
         \node[coordinate]                           (m18) {};       \&
         \node[dspsquare]                            (m19) {$\sum$}; \&
         \node[coordinate]                           (m110){};       \&
-        \node[dspsquare,inner sep=3pt]              (m111){CIC};    \&
+        \node[dspsquare,inner sep=3pt,label=below:\tiny\SI{52}{\bit}](m111){CIC};    \&
         \node[dspsquare,label=above:small]          (m112){hb};     \&
         \node[dspsquare]                            (m113){hb};     \&
         \node[dspmixer]                             (m114){};       \&
@@ -412,7 +421,7 @@ lower \SI{8}{\bit} are truncated from the sample.
         \node[coordinate]                           (m26) {};       \&
         \node[coordinate]                           (m27) {};       \&
         \node[dspswitch]                            (m28) {};       \&
-        \node[dspsquare,inner sep=3pt]              (m29) {cordic}; \&
+        \node[dspsquare,inner sep=3pt,label=below:\tiny\SI{25}{\bit}](m29) {cordic}; \&
         \node[coordinate]                           (m210) {};   \&
         \node[coordinate]                           (m211) {};      \&
         \node[coordinate]                           (m212) {};      \&
@@ -424,10 +433,10 @@ lower \SI{8}{\bit} are truncated from the sample.
         \\
         %------------------------------------------------------------
         \&
-        \node[dspnodeopen,dsp/label=below]          (m30) {adc\_b}; \&
+        \node[dspnodeopen,dsp/label=below]          (m30) {ADC b}; \&
         \node[coordinate]                           (m31) {};       \&
         \node[coordinate]                           (m32) {};       \&
-        \node[dspadder,label=-100:{-}]              (m33) {};       \&
+        \node[dspadder,label={[label distance=-1mm]-100:{-}}](m33) {};       \&
         \node[dspnodefull]                          (m34) {};       \&
         \node[coordinate]                           (m35) {};       \&
         \node[dspadder]                             (m36) {};       \&
@@ -435,7 +444,7 @@ lower \SI{8}{\bit} are truncated from the sample.
         \node[coordinate]                           (m38) {};       \&
         \node[coordinate]                           (m39) {};       \&
         \node[coordinate]                           (m310){};       \&
-        \node[dspsquare,inner sep=3pt]              (m311){CIC};    \&
+        \node[dspsquare,inner sep=3pt,label=below:\tiny\SI{52}{\bit}](m311){CIC};    \&
         \node[dspsquare,label=below:small]          (m312){hb};     \&
         \node[dspsquare]                            (m313){hb};     \&
         \node[dspmixer]                             (m314){};       \&
@@ -445,7 +454,7 @@ lower \SI{8}{\bit} are truncated from the sample.
         \node[coordinate]                           (m40) {};       \&
         \node[coordinate]                           (m41) {};       \&
         \node[coordinate]                           (m42) {};       \&
-        \node[dspsquare]                            (m43) {$\sum$}; \&
+        \node[dspsquare,label=below:\tiny\SI{38}{\bit}](m43) {$\sum$}; \&
         \node[coordinate]                           (m44) {};       \&
         \node[coordinate]                           (m45) {};       \&
         \node[dspmixer]                             (m46) {};       \\
@@ -459,45 +468,33 @@ lower \SI{8}{\bit} are truncated from the sample.
         \node[coordinate]                           (mb5) {};       \&
         \node                                       (mb6) {phase};  \\
     };
-    \draw[dspline] (m09) -- (m19);
-    \draw[dspconn] (m19) -- (m29);
+    \draw[dspline] (m09) -- node[bitwidth={right}{32}]{} (m19);
+    \draw[dspconn] (m19) -- node[bitwidth={right}{32}]{} (m29);
     %connections start -> dc offset
     \foreach \off/\i in {1mm/1,-1mm/3}
     {
         \draw[dspflow] (m\i0) -- (m\i1);
-        \draw[dspline] (m\i1) -- ([yshift=\off]m21) -- ([yshift=\off]m22.west);
+        \draw[dspline] (m\i1) -- node[bitwidth={right}{18}]{} ([yshift=\off]m21) -- ([yshift=\off]m22.west);
         \draw[dspline] ([yshift=\off]m22.east) -- ([yshift=\off]m23);
         \draw[dspconn] ([yshift=\off]m23) -- (m\i3);
     }
     %top connection dc offset -> correction
-    \begin{scope}[start chain]
-        \chainin (m14);
-        \chainin (m04) [join=by dspline];
-        \chainin (m03) [join=by dspconn];
-        \chainin (m13) [join=by dspconn];
-        \chainin (m14) [join=by dspconn];
-        \chainin (m15) [join=by dspconn];
-        \chainin (m05) [join=by dspline];
-        \chainin (m06) [join=by dspconn];
-        \chainin (m16) [join=by dspconn];
-    \end{scope}
+    \draw[dspline] (m14) -- (m04);
+    \draw[dspline] (m04) -- (m03) -- node[bitwidth={right}{18}]{} (m13) -- node[bitwidth={above}{18}]{} (m14) -- (m15) -- (m05);
+    \draw[dspconn] (m05) -- (m06);
+    \draw[dspconn] (m06) -- node[bitwidth={right}{36}]{} (m16);
     \draw[dspconn] (m15) -- (m16);
-    \draw[dspline] (m16) -- (m17) -- ([yshift=1mm]m27);
+    \draw[dspline] (m16) -- node[bitwidth={above}{24}]{} (m17) -- ([yshift=1mm]m27);
     %bottom connection dc offset -> correction
-    \begin{scope}[start chain]
-        \chainin (m34);
-        \chainin (m44) [join=by dspline];
-        \chainin (m43) [join=by dspconn];
-        \chainin (m33) [join=by dspconn];
-        \chainin (m34) [join=by dspconn];
-        \chainin (m36) [join=by dspconn];
-        \chainin (m37) [join=by dspline];
-    \end{scope}
-    \draw[dspline] (m37) -- ([yshift=-1mm]m27);
+    \draw[dspline] (m34) -- (m44);
+    \draw[dspconn] (m44) -- (m43) -- node[bitwidth={right}{18}]{} (m33) -- node[bitwidth={above}{18}]{} (m34) -- (m36);
+    \draw[dspline] (m36) -- node[bitwidth={above}{24}]{} (m37) -- ([yshift=-1mm]m27);
+
     \draw[dspline] (m15) -- (m45);
-    \draw[dspconn] (m45) -- (m46) -- (m36);
-    \draw[dspline] (ma6) -- (m06);
-    \draw[dspline] (mb6) -- (m46);
+    \draw[dspconn] (m45) -- (m46);
+    \draw[dspconn] (m46) -- node[bitwidth={right}{36}]{} (m36);
+    \draw[dspline] (ma6) -- node[bitwidth={right}{18}]{} (m06);
+    \draw[dspline] (mb6) -- node[bitwidth={right}{18}]{} (m46);
     %connection sw -> CIC
     \begin{scope}[dspconn]
         \draw ([yshift=1mm]m28.east) -- node[above] {i} ([yshift=1mm]m29.west);
@@ -508,40 +505,35 @@ lower \SI{8}{\bit} are truncated from the sample.
     \foreach \off/\i in {1mm/1,-1mm/3}
     {
         \draw[dspconn] ([yshift=\off]m27) -- ([yshift=\off]m28.west);
-        \draw[dspline] ([yshift=\off]m29.east) -- ([yshift=\off]m210) -- (m\i10);
-        \begin{scope}[start chain]
-            \chainin (m\i10);
-            \foreach \j in {11,12,13,14}
-            {
-                \chainin (m\i\j)[join=by dspconn];
-            }
-        \end{scope}
-        \begin{scope}[start chain]
-            \chainin (m214);
-            \chainin (m\i14)[join=by dspline];
-            \chainin (m\i15)[join=by dspline];
-            \chainin (m215)[join=by dspline];
-        \end{scope}
-
+        \draw[dspline] ([yshift=\off]m29.east) -- ([yshift=\off]m210) -- node[bitwidth={right}{24}]{} (m\i10);
+        \draw[dspconn] (m\i10) -- (m\i11);
+        \draw[dspconn] (m\i11) -- node[bitwidth={above}{24}]{} (m\i12);
+        \draw[dspconn] (m\i12) -- node[bitwidth={above}{24}]{} (m\i13);
+        \draw[dspconn] (m\i13) -- node[bitwidth={above}{24}]{} (m\i14);
+        \draw[dspline] (m214) -- node[bitwidth={right}{18}]{} (m\i14) -- node[bitwidth={above}{16}]{} (m\i15) -- (m215);
     }
     \draw[dspflow] (m215) -- (m216);
 
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m03) (m13) (m14),label=above:{DC offset}] {};
     \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m43) (m33) (m34),label=below:{DC offset}] {};
-    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(ma6) (mb6) (m15),label=below:{IQ balance}] {};
+    \node[draw,inner xsep=5pt,inner ysep=10pt,dashed,fit=(ma6) (mb6) (m15),label=below:{IQ balance}] {};
 \end{tikzpicture}}
-    \caption{DSP RX chain}
+\caption{\gls{dsp} \gls{rx} chain. Stroked lines indicate the bit width used.}
     \label{fig:rxpath}
 \end{figure}
-The RX chain (\cref{fig:rxpath}) starts with a multiplexer which allows
-interchanging the data from ADC a and ADC b. This is followed by the DC offset correction.
-The accumulator can be turned off and set to a fixed value.
-This allows static DC offsets as well as completely turning off the compensation. Data 
-generated by this stage has a width of \SI{18}{\bit}. IQ imbalance can be corrected by the
-next stage, which is done automatically if a calibration file is present. Calibration can be
-performed with the command \verb+uhd_cal_rx_iq_balance+\cite{usrp_cal}. This stage adds an additional
-\SI{6}{\bit}, for a total of \SI{24}{\bit}, to the data stream. Before entering the cordic, data streams from
-ADC a and ADC b can be interchanged again. One channel can also be zeroed out, in order to process
+The \gls{rx} chain (\cref{fig:rxpath}) starts with a multiplexer which allows
+interchanging the data from \gls{adc} a and \gls{adc} b and is followed by the
+\gls{dc} offset correction. The accumulator can be turned off completely or set
+to a fixed value for static \gls{dc} offset compensation. This stage is needed,
+because the SBX board left out the \gls{ac} coupling after DEMOD (see \cref{fig:usrp}),
+which is suggested in \cite{demod}.
+
+The \gls{iq} imbalance can be corrected by the next stage automatically
+when a calibration file is available. A calibration can be done with the command
+\verb+uhd_cal_rx_iq_balance+\cite{usrp_cal}.
+
+Before entering the cordic, data streams from \gls{adc} a and \gls{adc} b can
+be interchanged again. One channel can also be zeroed out, in order to process
 real valued signals in the rest of the chain. The cordic uses a bit width of \SI{25}{\bit} internally and is
 implemented in rotation mode, in order to be able to shift the spectrum of the incoming signal
 digitally. This is used automatically by the host driver, if the LO is not able to tune exactly
