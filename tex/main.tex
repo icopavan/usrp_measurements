@@ -585,9 +585,11 @@ filters. A half band filter is a decimating low pass \gls{fir} filter, which has
 been designed in a way that every other filter coefficient is zero. With this technique
 only half the multipliers are needed. This trades the need for less resources with
 a worse alias rejection. The \gls{ddc} chain uses two half band filters,
-one with eight taps and a small one with four taps. The small half band filter can be
-turned off, resulting in an overall decimation rate of 2 to 130. Both half band
-filters are designed with the tool from Doolittle \cite{halfband}.
+one with eight taps and a small one with four taps. Both half band filters can be
+turned off, resulting in an overall decimation rate of 2 to 512. Both half band
+filters are designed with the tool from Doolittle \cite{halfband}. Because of
+the way the decimation is done, odd decimation rates result in deactivated half band
+filters, which will cause noticeable \gls{cic} rolloff.
 
 The design is prepared for custom \gls{dsp} functionality, which can be inserted in front
 of the cordic or after the whole chain. After down conversion there is a scaling stage and
@@ -612,6 +614,7 @@ before handing off the samples over to the FIFO, they are clipped to \SI{16}{\bi
         \node[coordinate]                           (maa6) {};      \&
         \node[coordinate]                           (maa7) {};      \&
         \node[coordinate]                           (maa8) {};      \&
+        \&
         \node[coordinate]                           (maa9) {};      \&
         \node                                       (maa10) {mag};  \\
         %------------------------------------------------------------
@@ -625,6 +628,7 @@ before handing off the samples over to the FIFO, they are clipped to \SI{16}{\bi
         \node                                       (ma6) {phase};  \&
         \node[coordinate]                           (ma7) {};       \&
         \node[coordinate]                           (ma8) {};       \&
+        \&
         \node[coordinate]                           (ma9) {};       \&
         \node[dspmixer]                             (ma10) {};      \&
         \node                                       (ma11) {i\_dco};\\
@@ -639,13 +643,14 @@ before handing off the samples over to the FIFO, they are clipped to \SI{16}{\bi
         \node[dspsquare]                            (m06) {$\sum$}; \&
         \node[coordinate]                           (m07) {};       \&
         \node[dspmixer]                             (m08) {};       \&
+        \&
         \node[dspnodefull]                          (m09) {};       \&
         \node[dspadder]                             (m010){};       \&
         \node[dspadder]                             (m011) {};      \&
         \node[coordinate]                           (m012) {};      \&
         \node[coordinate]                           (m013) {};      \&
         \node[coordinate]                           (m014) {};      \&
-        \node[dspnodeopen,dsp/label=above]          (m015) {adc\_a};\&
+        \node[dspnodeopen,dsp/label=above]          (m015) {DAC a};\&
         \\
         %------------------------------------------------------------
         \node[text width=4ex] {}; \&
@@ -658,6 +663,7 @@ before handing off the samples over to the FIFO, they are clipped to \SI{16}{\bi
         \node[dspsquare,inner sep=3pt]              (m16) {cordic}; \&
         \node[coordinate]                           (m17) {};       \&
         \node                                       (m18) {scale};  \&
+        \&
         \node[coordinate]                           (m19) {};       \&
         \node[coordinate]                           (m110){};       \&
         \node[coordinate]                           (m111){};       \&
@@ -675,13 +681,14 @@ before handing off the samples over to the FIFO, they are clipped to \SI{16}{\bi
         \node[coordinate]                           (m26) {};       \&
         \node[coordinate]                           (m27) {};       \&
         \node[dspmixer]                             (m28) {};       \&
+        \&
         \node[coordinate]                           (m29) {};       \&
         \node[dspadder]                             (m210){};       \&
         \node[dspadder]                             (m211){};       \&
         \node[coordinate]                           (m212){};       \&
         \node[coordinate]                           (m213){};       \&
         \node[coordinate]                           (m214){};       \&
-        \node[dspnodeopen,dsp/label=below]          (m215){adc\_b}; \&
+        \node[dspnodeopen,dsp/label=below]          (m215){DAC b}; \&
         \\
         %------------------------------------------------------------
         \&
@@ -694,6 +701,7 @@ before handing off the samples over to the FIFO, they are clipped to \SI{16}{\bi
         \node[coordinate]                           (mb6) {};       \&
         \node[coordinate]                           (mb7) {};       \&
         \node[coordinate]                           (mb8) {};       \&
+        \&
         \node[coordinate]                           (mb9) {};       \&
         \node[dspmixer]                             (mb10) {};      \&
         \node                                       (mb11) {q\_dco};\\
@@ -708,54 +716,54 @@ before handing off the samples over to the FIFO, they are clipped to \SI{16}{\bi
         \node[coordinate]                           (mbb6) {};      \&
         \node[coordinate]                           (mbb7) {};      \&
         \node[coordinate]                           (mbb8) {};      \&
+        \&
         \node[coordinate]                           (mbb9) {};      \&
         \node                                       (mbb10) {phase};\\
     };
     \draw[dspflow] (m10) -- (m11);
-    \draw[dspline] (ma6) -- (m06);
-    \draw[dspconn] (m06) -- (m16);
-    \draw[dspline] (m01) -- node[above] {i} (m02);
-    \draw[dspline] (m21) -- node[below] {q} (m22);
+    \draw[dspline] (ma6) -- node[bitwidth={right}{32}]{} (m06);
+    \draw[dspconn] (m06) -- node[bitwidth={right}{32},yshift=2mm]{} (m16);
+    \draw[dspline] (m01) -- node[above] {I} (m02);
+    \draw[dspline] (m21) -- node[below] {Q} (m22);
     \foreach \off/\i/\j in {1mm/0/a,-1mm/2/b}
     {
-        \draw[dspline] (m11) -- (m\i1);
-        \begin{scope}[start chain]
-            \chainin (m\i2);
-            \chainin (m\i3) [join=by dspconn];
-            \chainin (m\i4) [join=by dspconn];
-            \chainin (m\i5) [join=by dspline];
-        \end{scope}
+        \draw[dspline] (m11) -- node[bitwidth={right}{16}]{} (m\i1);
+        \draw[dspconn] (m\i2) -- node[bitwidth={above}{18}]{} (m\i3);
+        \draw[dspconn] (m\i3) -- node[bitwidth={above}{18}]{} (m\i4);
+        \draw[dspline] (m\i4) -- node[bitwidth={above}{18}]{} (m\i5);
         \draw[dspline] (m\i5) -- ([yshift=\off]m15);
         \draw[dspconn] ([yshift=\off]m15) -- ([yshift=\off]m16.west);
         \draw[dspline] ([yshift=\off]m16.east) -- ([yshift=\off]m17);
         \draw[dspline] ([yshift=\off]m16.east) -- ([yshift=\off]m17) -- (m\i7);
-        \draw[dspconn] (m\i7) -- (m\i8);
-        \draw[dspline] (m18) -- (m\i8);
+        \draw[dspconn] (m\i7) -- node[bitwidth={above}{24}]{} (m\i8);
+        \draw[dspline] (m18) -- node[bitwidth={right}{18}]{} (m\i8);
         \draw[dspline] (m09) -- (m\j9);
         \draw[dspconn] (m\j9) -- (m\j10);
-        \begin{scope}[start chain]
-            \chainin (m\j\j10);
-            \chainin (m\j10)[join=by dspline];
-            \chainin (m\i10)[join=by dspconn];
-            \chainin (m\i11)[join=by dspconn];
-            \chainin (m\i12)[join=by dspline];
-        \end{scope}
-        \draw[dspline] (m\j11) -- (m\i11);
+        \draw[dspline] (m\j\j10) -- node[bitwidth={right}{24}]{} (m\j10);
+        \draw[dspconn] (m\j10) -- node[bitwidth={right}{36}]{} (m\i10);
+        \draw[dspconn] (m\i10) -- node[bitwidth={above}{24},xshift=-5mm]{} (m\i11);
+        \draw[dspline] (m\i11) -- node[bitwidth={above}{16},xshift=-2mm]{} (m\i12);
+        \draw[dspline] (m\j11) -- node[bitwidth={right}{24}]{} (m\i11);
         \draw[dspline] (m\i12) -- ([yshift=\off]m112);
         \draw[dspconn] ([yshift=\off]m112) -- ([yshift=\off]m113.west);
-        \draw[dspline] ([yshift=\off]m113.east) -- ([yshift=\off]m114) -- (m\i14);
+        \draw[dspline] ([yshift=\off]m113.east) -- ([yshift=\off]m114) -- node[bitwidth={right}{16}]{} (m\i14);
         \draw[dspflow] (m\i14) -- (m\i15);
     }
-    \draw[dspline] (m08) -- (m09);
+    \draw[dspline] (m08) -- node[bitwidth={above}{24}]{} (m09);
     \draw[dspconn] (m09) -- (m010);
-    \draw[dspconn] (m28) -- (m210);
+    \draw[dspconn] (m28) -- node[bitwidth={above}{24}]{} (m29) -- (m210);
 
+    \node[below=of m16,yshift=1cm] {\tiny\SI{24}{\bit}};
 
-    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(m09) (maa10) (mbb10),label=below:{IQ balance}] {};
-    \node[draw,inner xsep=5pt,inner ysep=20pt,dashed,fit=(ma11) (mb11),label=below:{DC offset}] {};
+    \node[draw,inner xsep=5pt,inner ysep=10pt,dotted,fit=(m09) (maa10) (mbb10),label=below:{IQ balance}] {};
+    \node[draw,inner xsep=5pt,inner ysep=10pt,dotted,fit=(ma11) (m011),label=above:{DC offset}] {};
+    \node[draw,inner xsep=5pt,inner ysep=10pt,dotted,fit=(m211) (mb11),label=below:{DC offset}] {};
+    \draw[dashed] ([xshift=1mm]m18.east |- maa10.north)  -- ([xshift=1mm]m18.east |- mbb10.south) node[coordinate] (split) {};
+    \draw (split) node[anchor=south west,rotate=90] {\textbf{DUC}};
+    \draw (split) node[anchor=north west,rotate=90] {\textbf{frontend}};
 \end{tikzpicture}
 }
-    \caption{DSP TX chain}
+    \caption{\gls{dsp} \gls{tx} chain. Stroked lines indicate the bit width used.}
     \label{fig:txpath}
 \end{figure}
 The TX chain (\cref{fig:txpath}) features similar stages as the RX chain, but in reversed order and
