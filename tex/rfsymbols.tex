@@ -90,6 +90,15 @@
     }
 }
 
+\long\def\pgfrfdeclaremonopole#1#2{
+    \pgfrfdeclarenode{#1}{#2}{
+        \anchor{A}{
+            \northwest
+            \pgf@y=0pt
+        }
+    }
+}
+
 \long\def\pgfrfdeclarebipole#1#2{
     \pgfrfdeclarenode{#1}{#2}{
         \anchor{A}{
@@ -519,4 +528,27 @@
 \pgfrfdeclarebipole{pll}{
     \pgftext{PLL}
 }
+\pgfrfdeclarebipole{dut}{
+    \pgftext{DUT}
+}
+
+\pgfrfdeclaremonopole{generator}{
+    \pgfscope             
+        \pgftransformscale{.5}
+        \pgftransformrotate{90}
+        \pgfnode{vsourcesinshape}{center}{}{pgf@att}{\pgfusepath{stroke}}
+    \endpgfscope
+}
+
+\pgfrfdeclaremonopole{powermeter}{
+    \pgfscope             
+        \pgftransformscale{.5}
+        \pgftransformrotate{-90}
+        \pgfnode{fulldiodeshape}{center}{}{pgf@att}{\pgfusepath{stroke}}
+    \endpgfscope
+    \pgfpathmoveto{\pgfpoint{0pt}{0.7\pgf@circ@res@up}}
+    \pgfpathlineto{\pgfpoint{0pt}{0.7\pgf@circ@res@down}}
+    \pgfusepath{draw}
+}
+
 \makeatother

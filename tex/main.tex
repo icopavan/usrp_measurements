@@ -117,6 +117,8 @@ captionpos=b,escapeinside={(*}{*)}}
 
 \usepackage[noabbrev]{cleveref}
 
+\usepackage{placeins}
+
 \usepackage[acronym]{glossaries}
 
 \newacronym{usrp}{USRP}{Universal Software Radio Platform}
@@ -147,6 +149,7 @@ captionpos=b,escapeinside={(*}{*)}}
 \newacronym{gui}{GUI}{graphical user interface}
 \newacronym{ui}{UI}{user interface}
 \newacronym{rf}{RF}{radio frequency}
+\newacronym{if}{IF}{intermediate frequency}
 \newacronym{ram}{RAM}{random access memory}
 \makeglossaries
 
@@ -196,7 +199,7 @@ captionpos=b,escapeinside={(*}{*)}}
 \end{titlepage}
 
 \tableofcontents
-
+\clearpage
 \begin{abstract}
     The low cost Ettus Research \gls{usrp} 
     combined with GNU Radio enables implementing cheap and simple radio solutions.
@@ -205,7 +208,7 @@ captionpos=b,escapeinside={(*}{*)}}
     budget. Although Ettus Research provides schematics, source code, and documentation,
     there is no data available on the RF characteristics of \gls{usrp} devices.
 \end{abstract}
-
+\clearpage
 \section{Introduction}
 \Gls{sdr} systems can be operated on a very broad frequency range,
 easily adapted to various needs, and allow operations which would be almost
@@ -1111,80 +1114,211 @@ which enables doing measurements from Matlab, while transmitting.
 %======================================================================
 \section{Measurements}
 \label{sec:measurements}
-All the measurements and the data processing have been done utilizing the following tools:
+%All the measurements and the data processing have been done utilizing the following tools:
+%\Cref{sec:rfsetup,sec:ifsetup,sec:imsetup} describe each setup in more detail.
+In order not to interfere with the high data rate needed by the \gls{usrp},
+every measurement setup uses dedicated network connection for the measurement
+devices and the \gls{usrp}.
 
+``Part A''and ``Part B'' in the following sections refer to \cref{fig:usrp}.
 
-In order not to interfere with the high data rate connection needed by \gls{usrp}, it used a dedicated network interface.
-
-\Cref{sec:rfsetup,sec:ifsetup,sec:imsetup} describe each setup in more detail.
-
-\subsubsection{RF Frequency Response}
-\label{sec:rfsetup}
+\subsection{RF Frequency Response}
+\subsubsection{RX}
+\label{sec:rfrx}
 \begin{figure}[htb]
-    \begin{subfigure}[t]{.5\linewidth}
-        \centering
-        \scalebox{0.8}{
-        \begin{tikzpicture}
-            \matrix (m) [matrix of nodes,
-                row sep=1cm,
-                column sep=1cm,
-                ampersand replacement=\&,
-                nodes={draw,
-                    line width=1pt,
-                    anchor=center, 
-                    text centered,
-                    minimum width=1.5cm,
-                    minimum height=8mm
-                }]
-            {
-                |[rounded corners]| USRP \& \SI{6}{\deci\bel} attn \& |[rounded corners]| SMBV \\
-                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
-            };
-            \draw[dashed] (m-2-1) -- node [pos=0.25,auto] {eth0} (m-1-1);
-            \draw[rounded corners,dashed] (m-2-1)  -| node [pos=0.05,auto] {eth1} (m-1-3);
-            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {RX} (m-1-2) -- (m-1-3);
-        \end{tikzpicture}
-        }
-        \caption{RX}
-    \end{subfigure}
-    \begin{subfigure}[t]{.5\linewidth}
-        \centering
-        \scalebox{0.8}{
-        \begin{tikzpicture}
-            \matrix (m) [matrix of nodes,
-                row sep=1cm,
-                column sep=1cm,
-                ampersand replacement=\&,
-                nodes={draw,
-                    line width=1pt,
-                    anchor=center, 
-                    text centered,
-                    minimum width=1.5cm,
-                    minimum height=8mm
-                }]
-            {
-                |[rounded corners]| USRP \& \SI{16}{\deci\bel} attn \& |[rounded corners]| Power Meter \\
-                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
-            };
-            \draw[dashed] (m-2-1) -- node [pos=0.25,auto] {eth0} (m-1-1);
-            \draw[rounded corners,dashed] (m-2-1)  -| node [pos=0.05,auto] {eth1} (m-1-3);
-            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {TX} (m-1-2) -- (m-1-3);
-        \end{tikzpicture}
-        }
-        \caption{TX}
-    \end{subfigure}
-    \caption{RF frequency response measurement setup}
-    \label{fig:rfsetup}
+    \centering
+    \begin{tikzpicture}
+        \draw node[dut] (dut) {};
+        \draw node[right=of dut,attenuator,label=below:\SI{6}{\deci\bel}] (att) {};
+        \draw node[right=of att,generator] (src) {};
+        \draw node[draw,rounded corners,below=of dut] (meas) {\begin{tabular}{l}PC \\ Matlab\end{tabular}};
+
+        \draw[dashed] (meas) -- (dut);
+        \draw (meas.north) node[anchor=south east] {\tiny eth0};
+        \draw[rounded corners,dashed] (meas) -| (src);
+        \draw (meas.east) node[anchor=south west] {\tiny eth1};
+        \draw[open triangle 45-] (dut) -- (att);
+        \draw (dut.east) node[anchor=south west] {\tiny RX};
+        \draw[open triangle 45-] (att) -- (src);
+    \end{tikzpicture}
+    \caption{\gls{rx} \gls{rf} response measurement setup}
+    \label{fig:rxrfsetup}
 \end{figure}
-\Cref{fig:rfsetup} depicts the basic measurement setup.
 
-Since the power head can only measure signals between \SI{-60}{\deci\belm} and
+The measurement setup can be seen in \cref{fig:rxrfsetup}. The \SI{6}{\deci\bel}
+attenuator was used for protecting the \gls{usrp}.
+
+As mentioned in \cref{sec:usrp} the design of the \gls{rx} path is missing \gls{ac}
+coupling. This results in a noticeable \gls{dc} offset in the measured samples.
+\gls{dc} offset compensation can completely remove this offset, but this would
+also remove any \gls{if} components at \SI{0}{\hertz}. Because of this, the
+\gls{rf} frequency response was measured at an \gls{if} frequency of
+\SI{1}{\mega\hertz}.
+
+The measurements were taken with a gain settings from \SI{0}{\deci\bel} to
+\SI{50}{\deci\bel} in \SI{5}{\deci\bel} steps. The output power of the
+generator was adjusted to keep input power of the \gls{usrp} at
+$\SI{-14}{\deci\belm} - gain$. For every gain setting the
+frequency was swept from \SI{400}{\mega\hertz} to \SI{4.4}{\giga\hertz} in
+\SI{50}{\mega\hertz} steps. The line format used was \SI{8}{\bit} at
+\SI{50}{\mega\samples\per\second}.
+
+These measurements were repeated with a power meter in place of the
+\gls{usrp} and the \gls{usrp} data converted as if the \SI{-14}{\deci\bel}
+were present at the input.
+
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel={gain},
+        ylabel={power},
+        x unit={\deci\bel},
+        y unit={\deci\belm},
+        minor tick num = 1
+        ]
+        \addplot[mark = +,red] table {data/rf/rx/8/dbm_400};
+        \addlegendentry{\SI{400}{MHz}}
+        \addplot[mark = x,green] table {data/rf/rx/8/dbm_2400};
+        \addlegendentry{\SI{2.4}{GHz}}
+        \addplot[mark = asterisk,blue] table {data/rf/rx/8/dbm_4400};
+        \addlegendentry{\SI{4.4}{GHz}}
+    \end{axis}
+\end{tikzpicture}
+    \caption{Input power needed for \SI{0}{\deci\belfs} at selected center frequencies}
+    \label{fig:inputfscrf}
+\end{figure}
+
+The measured data was normalized to \SI{0}{\deci\belfs} to create the plot in \cref{fig:inputfscrf}.
+This plot depicts the gain needed to reach \SI{0}{\deci\belfs} at selected center frequencies.
+
+As can been seen in \cref{fig:inputfscrf} the gain setting of the \gls{usrp} scales nearly
+linear up to \SI{30}{\deci\belm}. Higher gain values do not increase the power, because
+the maximum setting is \SI{31.5}{\deci\belm}.
+
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        legend pos=north east,
+        legend columns=2,
+        ylabel={ADC power},
+        xlabel={frequency},
+        y unit={\deci\belfs},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
+        width=\linewidth,
+        height=7cm,
+        minor tick num = 1
+        ]
+        \addplot[black] table {data/rf/rx/8/f0_0};
+    \end{axis}
+\end{tikzpicture}
+    \caption{\gls{adc} power over frequency at \SI{-14}{\deci\belm} input power and \SI{0}{\deci\bel} gain}
+    \label{fig:gainfscrf}
+\end{figure}
+
+According to the datasheet of the DEMOD (see \cref{fig:usrp}) \cite{demod}, it
+causes a part of the ripple seen in \cref{fig:gainfscrf}. The rest of the ripple is
+caused by mismatch of the individual components.
+
+The power difference between \SI{400}{\mega\hertz} and \SI{4.4}{\giga\hertz}
+stems in big parts from LNA1 and LNA2 (\cite{rxlna}), and from the DEMOD. Other
+causes can be mismatch between the components and the filter LP1, which is only
+active at lower frequencies. This results in a lower \gls{lo} power at the DEMOD.
+
+\FloatBarrier
+
+\subsubsection{TX}
+\label{sec:rftx}
+\begin{figure}[htb]
+    \centering
+    \begin{tikzpicture}
+        \draw node[dut] (dut) {};
+        \draw node[right=of dut,attenuator,label=below:\SI{16}{\deci\bel}] (att) {};
+        \draw node[right=of att,powermeter] (dst) {};
+        \draw node[draw,rounded corners,below=of dut] (meas) {\begin{tabular}{l}PC \\ Matlab\end{tabular}};
+
+        \draw[dashed] (meas) -- (dut);
+        \draw (meas.north) node[anchor=south east] {\tiny eth0};
+        \draw[rounded corners,dashed] (meas) -| (dst);
+        \draw (meas.east) node[anchor=south west] {\tiny eth1};
+        \draw[-open triangle 45] (dut) -- (att);
+        \draw (dut.east) node[anchor=south west] {\tiny TX};
+        \draw[-open triangle 45] (att) -- (dst);
+    \end{tikzpicture}
+    \caption{\gls{tx} \gls{rf} frequency response measurement setup}
+    \label{fig:txrfsetup}
+\end{figure}
+
+The setup to measure 
+a \SI{16}{\deci\bel} attenuator, to Since the power head can only measure signals between \SI{-60}{\deci\belm} and
 \SI{20}{\deci\belm} a \SI{6}{\deci\bel} and a \SI{10}{\deci\bel} attenuator were used,
-to bring down the signal to acceptable levels. Since the USRP shows high DC levels,
-caused by the mixer used, the RF frequency response has been measured with an offset
-of 1 MHz. DC offset correction is not an option, since this removes DC completely.
+to bring down the signal to acceptable levels.
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        legend pos = south west,
+        legend columns = -1,
+        ylabel={power},
+        xlabel={frequency},
+        y unit={\deci\belm},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
+        width=\linewidth,
+        height=7cm,
+        minor tick num = 1,
+        ymin = -25
+        ]
+        \addplot[red] table {data/rf/tx/0.8/0.0};
+        \addplot[green] table {data/rf/tx/0.8/10.0};
+        \addplot[blue] table {data/rf/tx/0.8/20.0};
+        \addplot[black] table {data/rf/tx/0.8/30.0};
+        \addplot[violet] table {data/rf/tx/0.8/31.5};
+        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
+    \end{axis}
+\end{tikzpicture}
+\caption{Output power, \SI{-1.94}{\deci\belfs}}
+    \label{fig:outputrf08}
+\end{figure}
+\begin{figure}[htb]
+    \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        legend pos = south west,
+        legend columns = -1,
+        ylabel={power},
+        xlabel={frequency},
+        y unit={\deci\belm},
+        x unit={\hertz},
+        change x base,
+        x SI prefix=giga,
+        width=\linewidth,
+        height=7cm,
+        minor tick num = 1,
+        ymin = -25
+        ]
+        \addplot[red] table {data/rf/tx/1.0/0.0};
+        \addplot[green] table {data/rf/tx/1.0/10.0};
+        \addplot[blue] table {data/rf/tx/1.0/20.0};
+        \addplot[black] table {data/rf/tx/1.0/30.0};
+        \addplot[violet] table {data/rf/tx/1.0/31.5};
+        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
+    \end{axis}
+\end{tikzpicture}
+    \caption{Output power, \SI{0}{\deci\belfs}}
+    \label{fig:outputrf1}
+\end{figure}
+Measurements were done at \SI{0}{\deci\belfs} and \SI{-1.94}{\deci\belfs}. The
+results can be seen in \cref{fig:outputrf08,fig:outputrf1}. AMP2 \cite{amp2} and AMP3
+\cite{amp3} are the main cause for the loss in gain over the frequency range.
 
-\subsubsection{IF Frequency Response}
+\FloatBarrier
+
+\subsection{IF Frequency Response}
 \label{sec:ifsetup}
 \begin{figure}[htb]
     \begin{subfigure}[t]{.5\linewidth}
@@ -1249,204 +1383,6 @@ This setup used an attenuator, for the same reasons mentioned in \ref{sec:rfsetu
 For TX measurement the ZVL was used, unlike in \cref{sec:rfsetup}L, to be able to isolate
 only the intended frequency.
 
-\subsubsection{Intermodulation Properties}
-\label{sec:imsetup}
-\begin{figure}[htb]
-    \begin{subfigure}[t]{.5\linewidth}
-        \centering
-        \scalebox{0.8}{
-        \begin{tikzpicture}
-            \matrix (m) [matrix of nodes,
-                row sep=1cm,
-                column sep=1cm,
-                ampersand replacement=\&,
-                nodes={draw,
-                    line width=1pt,
-                    anchor=center, 
-                    text centered,
-                    minimum width=1.5cm,
-                    minimum height=8mm
-                }]
-            {
-                |[rounded corners]| USRP \& |[shape=circle]| splitter \& \SI{10}{\deci\bel} attn \\
-                \& \SI{10}{\deci\bel} attn \& DC Block \\
-                     \& DC Block \& |[rounded corners]| SMIQ\\
-                     \& |[rounded corners]| SMBV \& |[rounded corners]| GPIB bridge \\
-                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
-            };
-            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {RX} (m-1-2) -- (m-1-3) -- (m-2-3) -- (m-3-3);
-            \draw[double,thick] (m-1-2) -- (m-2-2) -- (m-3-2) -- (m-4-2);
-            \draw[dashed] (m-5-1) -- node [pos=0.05,auto] {eth0} (m-1-1);
-            \draw[rounded corners,dashed] (m-5-1)  -| node [pos=0.12,auto] {eth1} (m-4-2);
-            \draw[rounded corners,dashed] (m-5-1)  -| (m-4-3);
-            \draw[rounded corners,dashdotted] (m-4-3) -- (m-3-3);
-        \end{tikzpicture}
-        }
-        \caption{RX}
-    \end{subfigure}
-    \begin{subfigure}[t]{.5\linewidth}
-        \centering
-        \scalebox{0.8}{
-        \begin{tikzpicture}
-            \matrix (m) [matrix of nodes,
-                row sep=1cm,
-                column sep=1cm,
-                ampersand replacement=\&,
-                nodes={draw,
-                    line width=1pt,
-                    anchor=center, 
-                    text centered,
-                    minimum width=1.5cm,
-                    minimum height=8mm
-                }]
-            {
-                |[rounded corners]| USRP \& \SI{16}{\deci\bel} attn \& |[rounded corners]| ZVL \\
-                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
-            };
-            \draw[dashed] (m-2-1) -- node [pos=0.25,auto] {eth0} (m-1-1);
-            \draw[rounded corners,dashed] (m-2-1)  -| node [pos=0.05,auto] {eth1} (m-1-3);
-            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {TX} (m-1-2) -- (m-1-3);
-        \end{tikzpicture}
-        }
-        \caption{TX}
-    \end{subfigure}
-    \caption{Intermodulation properties measurement setup}
-    \label{fig:imsetup}
-\end{figure}
-TX measurement used the same setup as described in \cref{sec:ifsetup}. Multiple
-measurements with random phases were taken.
-
-At first for RX a similar measurement setup as in \cref{sec:rfsetup} was attempted,
-but it was not possible to generate a signal free of intermodulation products with
-the SMBV. With the ZVL, it was verified, that those products are caused by the
-SMBV. This led to the setup in \cref{fig:imsetup}. This setup utilized a Mini-Circuits
-ZFRSC-183+ power splitter/combiner. Since this is a resistive power splitter, it has
-very poor isolation\cite{pwrsplit}. In order to prevent the signal generators from
-distorting the output because of this coupling the \SI{10}{\deci\bel} attenuator
-and the DC block were used.
-%======================================================================
-\clearpage
-\section{Measurement Results}
-All the circuit designations in the following sections refer to \cref{fig:usrp}.
-\subsection{RF Frequency Response}
-\subsubsection{RX}
-\label{sec:rfrx}
-\begin{figure}[htb]
-    \centering
-\begin{tikzpicture}
-    \begin{axis}[
-        xlabel={gain},
-        ylabel={power},
-        x unit={\deci\bel},
-        y unit={\deci\belm},
-        minor tick num = 1
-        ]
-        \addplot[mark = +,red] table {data/rf/rx/8/dbm_400};
-        \addlegendentry{\SI{400}{MHz}}
-        \addplot[mark = x,green] table {data/rf/rx/8/dbm_2400};
-        \addlegendentry{\SI{2.4}{GHz}}
-        \addplot[mark = asterisk,blue] table {data/rf/rx/8/dbm_4400};
-        \addlegendentry{\SI{4.4}{GHz}}
-    \end{axis}
-\end{tikzpicture}
-    \caption{Input power needed for \SI{0}{\deci\belfs}}
-    \label{fig:inputfscrf}
-\end{figure}
-\begin{figure}[htb]
-    \centering
-\begin{tikzpicture}
-    \begin{axis}[
-        legend pos=north west,
-        legend columns=2,
-        ylabel={gain},
-        xlabel={frequency},
-        y unit={\deci\bel},
-        x unit={\hertz},
-        change x base,
-        x SI prefix=giga,
-        width=\linewidth,
-        height=7cm,
-        minor tick num = 1
-        ]
-        \addplot[red] table {data/rf/rx/8/f_0};
-        \addlegendentry{\SI{0}{dBm}}
-        \addplot[green] table {data/rf/rx/8/f_15};
-        \addlegendentry{\SI{15}{dBm}}
-        \addplot[blue] table {data/rf/rx/8/f_30};
-        \addlegendentry{\SI{30}{dBm}}
-    \end{axis}
-\end{tikzpicture}
-    \caption{Gain needed for \SI{0}{\deci\belfs}}
-    \label{fig:gainfscrf}
-\end{figure}
-Measurement results are provided in \cref{fig:inputfscrf,fig:gainfscrf}.
-\Cref{fig:inputfscrf} reflects the maximum gain setting of \SI{31.5}{\deci\bel}.
-The loss in gain over the frequency range in \cref{fig:gainfscrf} is mainly caused
-by LNA1 and LNA2 \cite{rxlna} and the ripples by the DEMOD \cite{demod}.
-
-\subsubsection{TX}
-\label{sec:rftx}
-\begin{figure}[htb]
-    \centering
-\begin{tikzpicture}
-    \begin{axis}[
-        legend pos = south west,
-        legend columns = -1,
-        ylabel={power},
-        xlabel={frequency},
-        y unit={\deci\belm},
-        x unit={\hertz},
-        change x base,
-        x SI prefix=giga,
-        width=\linewidth,
-        height=7cm,
-        minor tick num = 1,
-        ymin = -25
-        ]
-        \addplot[red] table {data/rf/tx/0.8/0.0};
-        \addplot[green] table {data/rf/tx/0.8/10.0};
-        \addplot[blue] table {data/rf/tx/0.8/20.0};
-        \addplot[black] table {data/rf/tx/0.8/30.0};
-        \addplot[violet] table {data/rf/tx/0.8/31.5};
-        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
-    \end{axis}
-\end{tikzpicture}
-\caption{Output power, \SI{-1.94}{\deci\belfs}}
-    \label{fig:outputrf08}
-\end{figure}
-\begin{figure}[htb]
-    \centering
-\begin{tikzpicture}
-    \begin{axis}[
-        legend pos = south west,
-        legend columns = -1,
-        ylabel={power},
-        xlabel={frequency},
-        y unit={\deci\belm},
-        x unit={\hertz},
-        change x base,
-        x SI prefix=giga,
-        width=\linewidth,
-        height=7cm,
-        minor tick num = 1,
-        ymin = -25
-        ]
-        \addplot[red] table {data/rf/tx/1.0/0.0};
-        \addplot[green] table {data/rf/tx/1.0/10.0};
-        \addplot[blue] table {data/rf/tx/1.0/20.0};
-        \addplot[black] table {data/rf/tx/1.0/30.0};
-        \addplot[violet] table {data/rf/tx/1.0/31.5};
-        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
-    \end{axis}
-\end{tikzpicture}
-    \caption{Output power, \SI{0}{\deci\belfs}}
-    \label{fig:outputrf1}
-\end{figure}
-Measurements were done at \SI{0}{\deci\belfs} and \SI{-1.94}{\deci\belfs}. The
-results can be seen in \cref{fig:outputrf08,fig:outputrf1}. AMP2 \cite{amp2} and AMP3
-\cite{amp3} are the main cause for the loss in gain over the frequency range.
-
-\subsection{IF Frequency Response}
 \subsubsection{RX}
 \label{sec:ifrx}
 \begin{figure}[htb]
@@ -1609,6 +1545,81 @@ observable.
 
 \clearpage
 \subsection{Intermodulation Properties}
+\label{sec:imsetup}
+\begin{figure}[htb]
+    \begin{subfigure}[t]{.5\linewidth}
+        \centering
+        \scalebox{0.8}{
+        \begin{tikzpicture}
+            \matrix (m) [matrix of nodes,
+                row sep=1cm,
+                column sep=1cm,
+                ampersand replacement=\&,
+                nodes={draw,
+                    line width=1pt,
+                    anchor=center, 
+                    text centered,
+                    minimum width=1.5cm,
+                    minimum height=8mm
+                }]
+            {
+                |[rounded corners]| USRP \& |[shape=circle]| splitter \& \SI{10}{\deci\bel} attn \\
+                \& \SI{10}{\deci\bel} attn \& DC Block \\
+                     \& DC Block \& |[rounded corners]| SMIQ\\
+                     \& |[rounded corners]| SMBV \& |[rounded corners]| GPIB bridge \\
+                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
+            };
+            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {RX} (m-1-2) -- (m-1-3) -- (m-2-3) -- (m-3-3);
+            \draw[double,thick] (m-1-2) -- (m-2-2) -- (m-3-2) -- (m-4-2);
+            \draw[dashed] (m-5-1) -- node [pos=0.05,auto] {eth0} (m-1-1);
+            \draw[rounded corners,dashed] (m-5-1)  -| node [pos=0.12,auto] {eth1} (m-4-2);
+            \draw[rounded corners,dashed] (m-5-1)  -| (m-4-3);
+            \draw[rounded corners,dashdotted] (m-4-3) -- (m-3-3);
+        \end{tikzpicture}
+        }
+        \caption{RX}
+    \end{subfigure}
+    \begin{subfigure}[t]{.5\linewidth}
+        \centering
+        \scalebox{0.8}{
+        \begin{tikzpicture}
+            \matrix (m) [matrix of nodes,
+                row sep=1cm,
+                column sep=1cm,
+                ampersand replacement=\&,
+                nodes={draw,
+                    line width=1pt,
+                    anchor=center, 
+                    text centered,
+                    minimum width=1.5cm,
+                    minimum height=8mm
+                }]
+            {
+                |[rounded corners]| USRP \& \SI{16}{\deci\bel} attn \& |[rounded corners]| ZVL \\
+                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
+            };
+            \draw[dashed] (m-2-1) -- node [pos=0.25,auto] {eth0} (m-1-1);
+            \draw[rounded corners,dashed] (m-2-1)  -| node [pos=0.05,auto] {eth1} (m-1-3);
+            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {TX} (m-1-2) -- (m-1-3);
+        \end{tikzpicture}
+        }
+        \caption{TX}
+    \end{subfigure}
+    \caption{Intermodulation properties measurement setup}
+    \label{fig:imsetup}
+\end{figure}
+TX measurement used the same setup as described in \cref{sec:ifsetup}. Multiple
+measurements with random phases were taken.
+
+At first for RX a similar measurement setup as in \cref{sec:rfsetup} was attempted,
+but it was not possible to generate a signal free of intermodulation products with
+the SMBV. With the ZVL, it was verified, that those products are caused by the
+SMBV. This led to the setup in \cref{fig:imsetup}. This setup utilized a Mini-Circuits
+ZFRSC-183+ power splitter/combiner. Since this is a resistive power splitter, it has
+very poor isolation\cite{pwrsplit}. In order to prevent the signal generators from
+distorting the output because of this coupling the \SI{10}{\deci\bel} attenuator
+and the DC block were used.
+
 \subsubsection{RX}
 \begin{figure}[htb]
     \centering
@@ -1667,7 +1678,9 @@ Stepping the gain or changing the settings on the ZVL did not result
 in intermodulation products. Because of this the measurement was done
 at a fixed gain setting of \SI{20}{\deci\bel}. This also means that
 the intermodulation products in \cref{fig:txip3} are caused by the ADC.
-
+%======================================================================
+\clearpage
+\section{Conclusions}
 %======================================================================
 \clearpage
 \begin{appendix}

@@ -17,6 +17,9 @@ end
 for gain = gains
     dlmwrite(sprintf('%s%d/f_%d', basedir, wire, gain), [freqs' dBmOfreq(gain, ys, wire, delta)'], 'delimiter', '\t');
 end
+for gain = gains
+    dlmwrite(sprintf('%s%d/f0_%d', basedir, wire, gain), [freqs' dFSOfreq(gain, ys, wire, delta)'], 'delimiter', '\t');
+end
 
 wire = 8;
 load('04-Dec-2014/rxmeasure_8_50M.mat');
@@ -26,4 +29,7 @@ for freq = freqs
 end
 for gain = gains
     dlmwrite(sprintf('%s%d/f_%d', basedir, wire, gain), [freqs' dBmOfreq(gain, ys, wire, delta)'], 'delimiter', '\t');
+end
+for gain = gains
+    dlmwrite(sprintf('%s%d/f0_%d', basedir, wire, gain), [freqs' dFSOfreq(gain, ys, wire, delta)'], 'delimiter', '\t');
 end
