@@ -146,6 +146,8 @@ captionpos=b,escapeinside={(*}{*)}}
 \newacronym{volk}{VOLK}{vector-optimized library of kernels}
 \newacronym{gui}{GUI}{graphical user interface}
 \newacronym{ui}{UI}{user interface}
+\newacronym{rf}{RF}{radio frequency}
+\newacronym{ram}{RAM}{random access memory}
 \makeglossaries
 
 \begin{document}
@@ -880,6 +882,7 @@ numerical values, they actually reference the generic parameters. GNU Radio Comp
 default values, if there are any.
 
 \subsubsection{Generated Scripts}
+\label{sec:radioscripts}
 \begin{figure}[htbp]
     \centering
     \begin{lstlisting}[basicstyle=\tiny,caption={Generated RX flowgraph module with modifications ({\ttfamily rx\_final.py)}},label=lst:rxfinal.py]
@@ -1022,41 +1025,96 @@ for a new line on standard input. After this happens the processing is stopped
 with \lstinline{tb.stop()}. Note that \lstinline{tb.wait()} needs to be called
 in this case too, because this waits for a clean shut down.
 
-\subsection{Mathworks Matlab}
+\subsection{Using the \glsentryshort{usrp} from Mathworks Matlab}
 
-Matlab has been used to automate the measurements, process the raw data, and for
-initial visualization of the data. USRP control and data acquisition was planned to
-be done in matlab directly with the hardware drivers supplied by Mathworks \cite{matlab_usrp},
-which proved futile, because the matlab drivers for
-USRP only provide very basic functionality, e.g. support for setting the clock to
-external is missing. Another problem was, that matlab was too slow for processing
-data at a sample rate of \SI{50}{\mega\samples\per\second}. This led to the approach of
-using GNU Radio for communicating with the USRP. Two GNU Radio flowgraphs were
-developed and modified, that write the samples to a file in memory or read them
-(see ). Accompanying Matlab functions were developed that convert
-between the binary data and complex Matlab vectors.
+Drivers that enable using the \gls{usrp} from within Matlab and Simulink are
+provided by Mathworks \cite{matlab_usrp}. These drivers need the Communications
+System Toolbox.
 
-Because of no available VISA stack, automation of the meters was done via
-SCPI\footnote{Standard Commands for Programmable Instruments} over Ethernet and VXI-11.
-To be able to use VXI-11, without a VISA stack, a python library \cite{yamamoto_vxi-11} was
-utilized.
+The drivers only support basic functionality, like setting the center frequency
+or the decimation rate. It is not possible to set the clock source of the
+\gls{usrp} to external, which is needed for typical \gls{rf} measurements to
+synchronize the instruments.
+
+Another problem which occured during validation of the drivers was, that Matlab
+was too slow for real time data processing at a sample rate of
+\SI{50}{\mega\samples\per\second}.
+
+\begin{figure}[htb]
+    \centering
+    \begin{lstlisting}[language=matlab,basicstyle=\tiny,caption={Matlab \gls{usrp} \gls{rx} function ({\ttfamily usrp\_rx.m)}},label=lst:usrprx.m]
+function [v, status] = usrp_rx(frequency, gain, samples, lo, dc, samp_rate, wire)
+narginchk(3, 7); (*\label{line:argstart}*)
+    if nargin < 4
+        lo = 0;
+    end
+    if nargin < 5
+        dc = 0;
+    end
+    if nargin < 6
+        samp_rate = 50e6;
+    end
+    if nargin < 7
+        wire = 8;
+    end (*\label{line:argstop}*)
+    tmp = '/run/shm/sink'; (*\label{line:tmp}*)
+    cmd = sprintf('./rx_final.py --freq=%g --gain=%g --samples=%d --filename=%s --lo-off=%g --dc=%d --samp-rate=%g --wire=%d', frequency, gain, samples, tmp, lo, dc, samp_rate, wire);
+    [status, result] = system(cmd);
+    result = strsplit(result, '\n'); (*\label{line:check1}*)
+    status = status + length(result{end}); (*\label{line:check2}*)
+    v = load_data(tmp, samples, wire);
+    delete(tmp);
+end
+    \end{lstlisting}
+\end{figure}
+
+This led to the approach of using GNU Radio for communicating with the \gls{usrp}. A
+set of functions were developed, that call the scripts from \cref{sec:radioscripts}.
+The \gls{rx} script, provided in \cref{lst:usrprx.m} starts with setting
+default values for the arguments (\crefrange{line:argstart}{line:argstop}). To prevent
+adding latencies by writing the data to disk, the sample file gets stored in
+\texttt{/run/shm}, which resides in \gls{ram} (\cref{line:tmp}). This will
+work under linux only. Since overruns get only reported to standard out by
+GNU Radio, \cref{line:check1,line:check2} count the number of characters in
+the last line of the output and add it to \texttt{status}. If \texttt{status}
+is non zero, then the returned data should not be used.
+
+\begin{figure}[htb]
+    \centering
+    \begin{lstlisting}[language=matlab,basicstyle=\tiny,caption={Matlab function for loading data exported by GNU Radio ({\ttfamily load\_data.m)}},label=lst:load.m]
+function v = load_data(filename, count, wire)
+    switch wire
+        case 8
+            wire = 'int8';
+        case 16
+            wire = 'int16';
+    end
+    f = fopen(filename, 'rb');
+    t = fread(f, [2, count], wire);
+    v = t(1,:) + t(2,:)*1i;
+    [r, c] = size(v);
+    v = reshape(v, c, r);
+    fclose(f);
+end
+    \end{lstlisting}
+\end{figure}
+
+Converting the data is handled by \cref{lst:load.m}. Data from the script is
+stored in binary, with I and Q samples interleaved. This function returns the
+samples as a vector of complex numbers.
+
+Functions for transmitting samples were also developed and can be found in
+\cref{sec:sources}. These functions are similar to the \gls{rx} version. The
+only added feature is a flag which enables asynchronously sending samples,
+which enables doing measurements from Matlab, while transmitting.
+
 %======================================================================
-\section{Measurement Setup}
+\section{Measurements}
 \label{sec:measurements}
 All the measurements and the data processing have been done utilizing the following tools:
 
-\subsection{Meters and Measurment Setup}
-A Rhode \& Schwarz SMBV 100a, and a Rhode \& Schwarz SMIQ06B were used to generate
-signals for RX measurements and as clock reference. Since the SMIQ06B possesses no
-Ethernet connectivity, an Agilent E85810 GPIB Etheret bridge provided the necessary
-conversion. Power measurements were taken with an Agilent N1914A Power Meter and an
-Agilent E9301A Power Sensor. Network parameters and power measurements of specific
-spectrum ranges were done with a Rhode \& Schwarz ZVL. In order not to interfere
-with the high data rate connection needed by USRP, it used a dedicated network interface.
 
-The TX measurement data was corrected with the S-Parameters of the cable and
-attenuators, and the RX measurements by measuring the signal power arriving at
-the USRP by replacing the USRP with the power meter.
+In order not to interfere with the high data rate connection needed by \gls{usrp}, it used a dedicated network interface.
 
 \Cref{sec:rfsetup,sec:ifsetup,sec:imsetup} describe each setup in more detail.
 
@@ -1617,6 +1675,14 @@ the intermodulation products in \cref{fig:txip3} are caused by the ADC.
 \label{sec:sources}
 All the raw data, processed results and sources can be found at
 \url{https://github.com/notti/usrp_measurements}.
+\section{Used Meters}
+A Rhode \& Schwarz SMBV 100A, and a Rhode \& Schwarz SMIQ06B were used to generate
+signals for RX measurements and as clock reference. Since the SMIQ06B possesses no
+Ethernet connectivity, an Agilent E85810 GPIB Etheret bridge provided the necessary
+conversion. Power measurements have been carried out with an Agilent N1914A Power Meter and an
+Agilent E9301A averaging Power Sensor. A Rhode \& Schwarz ZVL was used to carry out
+spectrum measurements and measure cable losses.
+
 \section*{Copyright}
 This work is licensed under the Creative Commons Attribution 4.0 International
 License. To view a copy of this license, visit
