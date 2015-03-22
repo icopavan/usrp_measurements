@@ -1219,16 +1219,14 @@ the maximum setting is \SI{31.5}{\deci\belm}.
     \label{fig:gainfscrf}
 \end{figure}
 
-According to the datasheet of the DEMOD (see \cref{fig:usrp}) \cite{demod}, it
+According to the datasheet of the DEMOD \cite{demod} (see \cref{fig:usrp}), it
 causes a part of the ripple seen in \cref{fig:gainfscrf}. The rest of the ripple is
-caused by mismatch of the individual components.
+probably caused by mismatch of the individual components.
 
 The power difference between \SI{400}{\mega\hertz} and \SI{4.4}{\giga\hertz}
-stems in big parts from LNA1 and LNA2 (\cite{rxlna}), and from the DEMOD. Other
-causes can be mismatch between the components and the filter LP1, which is only
+stems in big parts from LNA1 and LNA2 \cite{rxlna}, and from the DEMOD. Other
+causes can be mismatch between the components, and the filter LP1, which is only
 active at lower frequencies. This results in a lower \gls{lo} power at the DEMOD.
-
-\FloatBarrier
 
 \subsubsection{TX}
 \label{sec:rftx}
@@ -1252,10 +1250,24 @@ active at lower frequencies. This results in a lower \gls{lo} power at the DEMOD
     \label{fig:txrfsetup}
 \end{figure}
 
-The setup to measure 
-a \SI{16}{\deci\bel} attenuator, to Since the power head can only measure signals between \SI{-60}{\deci\belm} and
-\SI{20}{\deci\belm} a \SI{6}{\deci\bel} and a \SI{10}{\deci\bel} attenuator were used,
-to bring down the signal to acceptable levels.
+The setup to for the \gls{tx} \gls{rf} frequency response, as can be seen in 
+\cref{fig:txrfsetup} uses a \SI{16}{\deci\bel} attenuator, to limit the output
+signal from the \gls{usrp} to an acceptable range of the power sensor (\SI{-60}{\deci\belm}
+to \SI{20}{\deci\belm}).
+
+Measurements were taken at gain settings ranging from \SI{0}{\deci\bel} to \SI{30}{\deci\bel}
+in \SI{5}{\deci\bel} steps. An additional measurement was taken at the maximal gain
+setting of \SI{31.5}{\deci\bel}. \gls{rf} frequencies ranged from \SI{400}{\mega\hertz} to
+\SI{4.4}{\giga\hertz} in \SI{50}{\mega\hertz} steps. The line format used was
+\SI{8}{\bit} at a sampling rate of \SI{50}{\mega\samples\per\second}.
+
+Two amplitudes were used in the measurement: $0.8 \times \text{full scale}$, for measuring
+samples in the linear region of the \gls{dac}, and full scale to measure the absolute
+maximum value.
+
+To get the results at the output port of the \gls{usrp}, the measurement data was corrected
+by the forward gain of the cable with the attenuator attached.
+
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
@@ -1315,8 +1327,6 @@ to bring down the signal to acceptable levels.
 Measurements were done at \SI{0}{\deci\belfs} and \SI{-1.94}{\deci\belfs}. The
 results can be seen in \cref{fig:outputrf08,fig:outputrf1}. AMP2 \cite{amp2} and AMP3
 \cite{amp3} are the main cause for the loss in gain over the frequency range.
-
-\FloatBarrier
 
 \subsection{IF Frequency Response}
 \label{sec:ifsetup}
