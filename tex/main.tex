@@ -865,10 +865,12 @@ Besides parameters, signal processing blocks have input and/or output ports. Tho
 can be connected from output to input. One Output can feed several inputs. Outputs and inputs
 must always be connected. There are also modules featuring optional ones.
 
-Compiling the flowgraph in \cref{fig:grc_rx} with GNU Radio companion, creates a python script
+Compiling the flowgraph in \cref{fig:grc_rx} with GNU Radio Companion, creates a python script
 called {\ttfamily rx.py}, that samples packets from an \gls{usrp} source, drops the first
 \num{10e3} samples ({\ttfamily Skip Head}), and writes
-them into the file named {\ttfamily filename} ({\ttfamily File Sink}). {\ttfamily Head}
+them into the file named {\ttfamily filename} ({\ttfamily File Sink}). Skipping samples in the
+beginning is necessary, because there is no way to detect that initialization has finished
+and every subsystem is in a stable state. {\ttfamily Head}
 stops processing after the specified number of samples have passed through it. This python
 script can be used standalone, or be adapted to requirements, that can not be met by GNU Radio
 Companion (e.g. conditionally instantiating flowgraph modules).
@@ -964,10 +966,10 @@ if __name__ == '__main__': (*\label{line:main}*)
 \end{figure}
 The generated scripts follow a predefined structure. The following explains
 this structure and possible entrypoints based on the script in
-\cref{lst:rxfinal.py}, which has been generated from the flowgraph in \cref{fig:grc_rx}
-and modified to support additional features.
+\cref{lst:rxfinal.py}. This script has been generated from the flowgraph
+in \cref{fig:grc_rx} and modified to support additional features.
 
-All the scripts contain a class (\cref{line:classdef}) which represents the flowgraph
+All the generated scripts contain a class (\cref{line:classdef}), which represents the flowgraph
 and is named according to the {\texttt id} in the {\texttt Options} block. In the
 \lstinline{__init__} function (\cref{line:init}) the whole flowgraph,
 starting with the blocks (\cref{line:blockinst}) followed by the connections
@@ -977,7 +979,18 @@ Normally GNU Radio Companion would insert get- and set-functions for all
 variables in \cref{line:setters}. Those have been removed for clarity from the
 script. They are only needed if the settings need to be changed during runtime.
 This can happen e.g. by changing a slider or pressing a button in the
-graphical user interface.
+\gls{gui}.
+
+\Cref{line:dcoff1} and \cref{line:dcoff2} in \cref{lst:rxfinal.py} are intended to turn off \gls{dc} offset
+compensation by disabling the accumulator and setting the accumulator value to zero 
+(see \cref{sec:dsprx}). These two settings are not available in the \gls{gui}.
+
+Several other modifications (\Cref{line:w81,line:w82,line:w83} in \cref{lst:rxfinal.py})
+make the flowgraph more dynamic, to support \SI{8}{\bit} and \SI{16}{\bit} mode with
+the same python script. In \SI{8}{\bit} mode an additional block in \cref{line:short}
+is added to the flowgraph, for converting the samples provided by the \gls{usrp} source
+to the appropriate data type. This is necessary, because the \gls{usrp} block has a
+very limited number of output data formats.
 
 The last block in the file represents the main function (\cref{line:main}),
 which is executed, when the script is called directly, instead of being
@@ -985,8 +998,7 @@ used as a module. This block parses the arguments handed over to the script,
 does the necessary setup, instantiates the defined class, starts the processing
 (\cref{line:start}) asynchronously, and waits for completion (\cref{line:wait}).
 \lstinline{tb.stop()} could be used between those two functions to
-stop processing early. Additional information on the particular modifications
-can be found in \cref{sec:measgnu}.
+stop processing early.
 
 \begin{figure}[htbp]
     \centering
@@ -1010,11 +1022,8 @@ for a new line on standard input. After this happens the processing is stopped
 with \lstinline{tb.stop()}. Note that \lstinline{tb.wait()} needs to be called
 in this case too, because this waits for a clean shut down.
 
-%======================================================================
-\section{Measurement Setup}
-\label{sec:measurements}
-All the measurements and the data processing have been done utilizing the following tools:
 \subsection{Mathworks Matlab}
+
 Matlab has been used to automate the measurements, process the raw data, and for
 initial visualization of the data. USRP control and data acquisition was planned to
 be done in matlab directly with the hardware drivers supplied by Mathworks \cite{matlab_usrp},
@@ -1024,39 +1033,18 @@ external is missing. Another problem was, that matlab was too slow for processin
 data at a sample rate of \SI{50}{\mega\samples\per\second}. This led to the approach of
 using GNU Radio for communicating with the USRP. Two GNU Radio flowgraphs were
 developed and modified, that write the samples to a file in memory or read them
-(see \cref{sec:measgnu}). Accompanying Matlab functions were developed that convert
+(see ). Accompanying Matlab functions were developed that convert
 between the binary data and complex Matlab vectors.
 
 Because of no available VISA stack, automation of the meters was done via
 SCPI\footnote{Standard Commands for Programmable Instruments} over Ethernet and VXI-11.
 To be able to use VXI-11, without a VISA stack, a python library \cite{yamamoto_vxi-11} was
 utilized.
-\subsection{GNU Radio}
-\label{sec:measgnu}
-As meantioned in \cref{sec:intgnu}, two communication scripts have been developed with GNU
-Radio to write USRP samples to a file, and read samples from a file and send them to the USRP.
-Tests showed that right after starting the flowgraph there are phase errors despite a
-locked LO, which is checked by the USRP driver. Because of this the flowgraph in \cref{fig:grc_rx}
-uses a {\ttfamily Skip Head} module, which skips enough samples.
+%======================================================================
+\section{Measurement Setup}
+\label{sec:measurements}
+All the measurements and the data processing have been done utilizing the following tools:
 
-Since the USRP GNU Radio Companion module has no \gls{gui} parameter to turn off DC offset
-compensation, the output script was modified by hand. Despite lacking some possibilities
-in the interface, it is however possible to do everything within python.
-\Cref{line:dcoff1} and \cref{line:dcoff2} in \cref{lst:rxfinal.py} turn off DC offset
-compensation by disabling the accumulator and setting the accumulator value to zero 
-(see \cref{sec:dsprx}).
-
-Several other additions (\Cref{line:w81,line:w82,line:w83} in \cref{lst:rxfinal.py})
-make the flowgraph more dynamic, to support \SI{8}{\bit} and \SI{16}{\bit} mode with
-the same python script. In \SI{8}{\bit} mode an additional block in \cref{line:short}
-is added to the flowgraph, which converts the short integers from the USRP source to
-characters. This is necessary, because the USRP block has a very limited choice of
-output data formats.
-
-The transmit script is very similar to the receive script. The only differences are,
-that the read file data is repeated in a loop, and an additional functionality
-allows for endless streaming, which is cancelled on receiveing a line feed on
-standard input.
 \subsection{Meters and Measurment Setup}
 A Rhode \& Schwarz SMBV 100a, and a Rhode \& Schwarz SMIQ06B were used to generate
 signals for RX measurements and as clock reference. Since the SMIQ06B possesses no
