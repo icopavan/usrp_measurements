@@ -5,11 +5,11 @@ corr = repmat(-10-gains',1,length(cfreqs)) - pow2db(mean(db2pow(res),3));
 load('19-Feb-2015/rxif.mat');
 
 ys8(:,:,25) = abs(ms8(:,:,25));
-res8 = -10-repmat(gains',1,length(cfreqs),length(ifreqs8))+mag2db((2^(8-1)-1)./ys8) + repmat(corr,1,1,length(ifreqs8));
+res8 = -10-repmat(gains',1,length(cfreqs),length(ifreqs8))+mag2db(ys8)-mag2db(2^(8-1)-1) + repmat(corr,1,1,length(ifreqs8));
 ys825(:,:,25) = abs(ms825(:,:,25));
-res825 = -10-repmat(gains',1,length(cfreqs),length(ifreqs16))+mag2db((2^(8-1)-1)./ys825) + repmat(corr,1,1,length(ifreqs16));
+res825 = -10-repmat(gains',1,length(cfreqs),length(ifreqs16))+mag2db(ys825)-mag2db(2^(8-1)-1) + repmat(corr,1,1,length(ifreqs16));
 ys16(:,:,25) = abs(ms16(:,:,25));
-res16 = -10-repmat(gains',1,length(cfreqs),length(ifreqs16))+mag2db((2^(16-1)-1)./ys16) + repmat(corr,1,1,length(ifreqs16));
+res16 = -10-repmat(gains',1,length(cfreqs),length(ifreqs16))+mag2db(ys16)-mag2db(2^(16-1)-1) + repmat(corr,1,1,length(ifreqs16));
 
 basedir = '../tex/data/if/rx/';
 mkdir(basedir);
