@@ -1395,7 +1395,7 @@ data corrected by as if the $\SI{-10}{\deci\belm}-gain$ were present at the inpu
         \addplot3[surf,mesh/cols=41] table {data/if/rx/mesh16_15.0};
     \end{axis}
 \end{tikzpicture}
-    \caption{Input power, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, \SI{25}{\mega\samples\per\second}}
+    \caption{\gls{adc} power, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, \SI{25}{\mega\samples\per\second}}
     \label{fig:rfifrx16}
 \end{figure}
 
@@ -1458,7 +1458,7 @@ while the cut off at the edges of the usable spectrum is caused by the alias fil
         \addplot[red] table {data/if/rx/8_2000_15.0};
     \end{axis}
 \end{tikzpicture}
-    \caption{\gls{adc} power, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{50}{\mega\samples\per\second}}
+    \caption{\gls{adc} power, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{50}{\mega\samples\per\second}}
     \label{fig:ifrx50}
 \end{figure}
 
@@ -1467,20 +1467,47 @@ as \cref{fig:ifrx25}, but at \SI{50}{\mega\samples\per\second}. There are only
 data points for \SI{8}{\bit}, because it is not possible to use \SI{16}{\bit} mode
 at \SI{50}{\mega\samples\per\second} (see \cref{sec:usrp}).
 
-In \cref{fig:ifrx50} the effect of the \SI{20}{\mega\hertz} filter mentioned in
-\cref{sec:usrp} is observable. The \gls{cic} roll off can also be seen, because
+In \cref{fig:ifrx50} the cut off frequency of \SI{20}{\mega\hertz}, of the LP3
+filter, mentioned in \cref{sec:usrp}, is observable. The \gls{cic} roll off can also be seen, because
 in \SI{50}{\mega\samples\per\second} mode only one of the half band filters is
 active (see \cref{sec:dsprx}). Because of this the \gls{cic} filter is not
 fully compensated.
 
+\clearpage
 \subsubsection{TX}
+\label{sec:iftx}
+\begin{figure}[htb]
+    \centering
+    \begin{tikzpicture}
+        \draw node[dut] (dut) {};
+        \draw node[right=of dut,attenuator,label=below:\SI{16}{\deci\bel}] (att) {};
+        \draw node[right=of att,powermeter] (dst) {};
+        \draw node[draw,rounded corners,below=of dut] (meas) {\begin{tabular}{l}PC \\ Matlab\end{tabular}};
 
-The setup for measuring the \gls{rx} \gls{if} frequency response can be seen in
-\cref{fig:rxifsetup}. For power measurements a spectrum analyzer has been used
+        \draw[dashed] (meas) -- (dut);
+        \draw (meas.north) node[anchor=south east] {\tiny eth0};
+        \draw[rounded corners,dashed] (meas) -| (dst);
+        \draw (meas.east) node[anchor=south west] {\tiny eth1};
+        \draw[-open triangle 45] (dut) -- (att);
+        \draw (dut.east) node[anchor=south west] {\tiny TX};
+        \draw[-open triangle 45] (att) -- (dst);
+    \end{tikzpicture}
+    \caption{\gls{tx} \gls{if} frequency response measurement setup}
+    \label{fig:txifsetup}
+\end{figure}
+
+The setup for measuring the \gls{tx} \gls{if} frequency response can be seen in
+\cref{fig:txifsetup}. For power measurements a spectrum analyzer has been used
 instead of a power sensor, to measure only the targeted \gls{if} frequency. This
 is needed, because significant aliasing peaks can be observed while measuring
 frequencies at the edge of the usable frequency band.
-\label{sec:iftx}
+
+Calibrating the spectrum analyzer was done using a power meter instead of the
+spectrum analyzer and measuring a single \gls{if} frequency at
+\SI{1}{\mega\hertz} for every center frequency. The samples were corrected
+by the power difference between those two measurements and by the forward
+transfer function of the cable, measured with a network analyzer.
+
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
@@ -1500,13 +1527,19 @@ frequencies at the edge of the usable frequency band.
         width=\linewidth,
         height=7cm,
         minor tick num = 1,
+        restrict y to domain=-12e6:12e6,
         ]
         \addplot3[surf,mesh/cols=41] table {data/if/tx/mesh16_15.0};
     \end{axis}
 \end{tikzpicture}
-    \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, \SI{25}{\mega\samples\per\second}}
+\caption{Output power at $0.7 \times \text{full scale}$, \SI{16}{\bit}, \SI{15}{\deci\bel} gain, \SI{25}{\mega\samples\per\second}}
     \label{fig:rfiftx16}
 \end{figure}
+
+The overview in \cref{fig:rfiftx16} has the same slope and ripple
+in the \gls{rf} frequency direction as \cref{sec:rftx}. Both are uniformly
+distributed along the \gls{if} frequency axis.
+
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
@@ -1520,13 +1553,21 @@ frequencies at the edge of the usable frequency band.
         width=\linewidth,
         height=5cm,
         minor tick num = 1,
+        restrict x to domain=-12e6:12e6,
         ]
         \addplot[red] table {data/if/tx/16_2000_15.0};
     \end{axis}
 \end{tikzpicture}
-    \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{25}{\mega\samples\per\second}, \SI{16}{\bit}}
+    \caption{Output power at $0.7 \times \text{full scale}$, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{25}{\mega\samples\per\second}, \SI{16}{\bit}}
     \label{fig:iftx}
 \end{figure}
+
+\Cref{fig:iftx} features only the \SI{16}{\bit} measurement, because the \SI{8}{\bit}
+measurement produced the same result. Like in \cref{sec:ifrx} the cut off frequency
+of the aliasing filter is visible. \gls{cic} roll off is noticeable in
+\SI{25}{\mega\samples\per\second}, which means, that the half band filters don't fully
+compensate the \gls{cic} (see \cref{sec:dsptx}).
+
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
@@ -1540,20 +1581,21 @@ frequencies at the edge of the usable frequency band.
         width=\linewidth,
         height=5cm,
         minor tick num = 1,
+        restrict x to domain=-24e6:24e6,
         ]
         \addplot[red] table {data/if/tx/8_2000_15.0};
     \end{axis}
 \end{tikzpicture}
-    \caption{Output power \SI{-3.10}{\deci\belfs}, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{50}{\mega\samples\per\second}, \SI{8}{\bit}}
+    \caption{Output power at $0.7 \times \text{full scale}$, \SI{15}{\deci\bel} gain, RF frequency \SI{2}{\giga\hertz}, \SI{50}{\mega\samples\per\second}, \SI{8}{\bit}}
     \label{fig:iftx50}
 \end{figure}
-The overview in \cref{fig:rfiftx16} has the same slope and ripple
-in the RF frequency direction as \cref{sec:rftx}. Both are uniformly
-distributed along the IF frequency axis. \cref{fig:iftx} features only the \SI{16}{\bit}
-measurement, because the \SI{8}{\bit} measurement produced the same result.
 
-In \cref{fig:iftx50} the effect of the \SI{20}{\mega\hertz} filter mentioned in \cref{sec:usrp} is
-observable.
+Since in \SI{50}{\mega\samples\per\second} mode only one half band filter
+is active (see \cref{sec:dsptx}), \gls{cic} roll of is more noticeable in
+\cref{fig:iftx50} than in \cref{fig:iftx}.
+
+In \cref{fig:iftx50} the effect of the LP5 filter, which has a cut off frequency
+of \SI{20}{\mega\hertz} mentioned in \cref{sec:usrp} is also observable.
 
 \clearpage
 \subsection{Intermodulation Properties}
