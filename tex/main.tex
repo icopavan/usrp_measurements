@@ -1200,8 +1200,6 @@ the maximum setting is \SI{31.5}{\deci\belm}.
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos=north east,
-        legend columns=2,
         ylabel={ADC power},
         xlabel={frequency},
         y unit={\deci\belfs},
@@ -1261,19 +1259,17 @@ setting of \SI{31.5}{\deci\bel}. \gls{rf} frequencies ranged from \SI{400}{\mega
 \SI{4.4}{\giga\hertz} in \SI{50}{\mega\hertz} steps. The line format used was
 \SI{8}{\bit} at a sampling rate of \SI{50}{\mega\samples\per\second}.
 
-Two amplitudes were used in the measurement: $0.8 \times \text{full scale}$, for measuring
-samples in the linear region of the \gls{dac}, and full scale to measure the absolute
-maximum value.
+In order to stay in the linear region of \gls{dac} the generated samples had an amplitude
+of $0.8 \times \text{full scale}$.
 
 To get the results at the output port of the \gls{usrp}, the measurement data was corrected
-by the forward gain of the cable with the attenuator attached.
+by the forward transfer function of the cable with the attenuator attached, which was measured
+with a network analyzer.
 
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos = south west,
-        legend columns = -1,
         ylabel={power},
         xlabel={frequency},
         y unit={\deci\belm},
@@ -1283,50 +1279,60 @@ by the forward gain of the cable with the attenuator attached.
         width=\linewidth,
         height=7cm,
         minor tick num = 1,
-        ymin = -25
         ]
-        \addplot[red] table {data/rf/tx/0.8/0.0};
-        \addplot[green] table {data/rf/tx/0.8/10.0};
-        \addplot[blue] table {data/rf/tx/0.8/20.0};
-        \addplot[black] table {data/rf/tx/0.8/30.0};
-        \addplot[violet] table {data/rf/tx/0.8/31.5};
-        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
+        \addplot[black] table {data/rf/tx/0.821.0/0.0};
     \end{axis}
 \end{tikzpicture}
-\caption{Output power, \SI{-1.94}{\deci\belfs}}
+\caption{Output power over frequency, \SI{0}{\deci\belfs}, \SI{0}{\deci\bel} gain}
     \label{fig:outputrf08}
 \end{figure}
+
+Measurement results in \cref{fig:outputrf08} were normalized as if the measurement
+was taken at full scale, to be able to compare this data to other measurements.
+The frequency response shows a large gain droop, which, according to the datasheets
+is mainly caused by AMP2\cite{amp2} and AMP3\cite{amp3} (see \cref{fig:usrp}).
+
 \begin{figure}[htb]
-    \centering
+    \begin{subfigure}[t]{.5\linewidth}
+        \centering
 \begin{tikzpicture}
     \begin{axis}[
-        legend pos = south west,
-        legend columns = -1,
-        ylabel={power},
-        xlabel={frequency},
+        ylabel={output power},
+        xlabel={gain setting},
         y unit={\deci\belm},
-        x unit={\hertz},
-        change x base,
-        x SI prefix=giga,
-        width=\linewidth,
-        height=7cm,
-        minor tick num = 1,
-        ymin = -25
+        x unit={\deci\bel},
+        width=\linewidth
         ]
-        \addplot[red] table {data/rf/tx/1.0/0.0};
-        \addplot[green] table {data/rf/tx/1.0/10.0};
-        \addplot[blue] table {data/rf/tx/1.0/20.0};
-        \addplot[black] table {data/rf/tx/1.0/30.0};
-        \addplot[violet] table {data/rf/tx/1.0/31.5};
-        \legend{\SI{0}{dB},\SI{10}{dB},\SI{20}{dB},\SI{30}{dB},\SI{31.5}{dB}}
+        \addplot[black] table {data/rf/tx/1db/1.00};
     \end{axis}
 \end{tikzpicture}
-    \caption{Output power, \SI{0}{\deci\belfs}}
+    \caption{\SI{1}{\giga\hertz}}
     \label{fig:outputrf1}
+    \end{subfigure}
+    \begin{subfigure}[t]{.5\linewidth}
+        \centering
+\begin{tikzpicture}
+    \begin{axis}[
+        ylabel={output power},
+        xlabel={gain setting},
+        y unit={\deci\belm},
+        x unit={\deci\bel},
+        width=\linewidth
+        ]
+        \addplot[black] table {data/rf/tx/1db/4.00};
+    \end{axis}
+\end{tikzpicture}
+    \caption{\SI{4}{\giga\hertz}}
+    \label{fig:outputrf4}
+    \end{subfigure}
+    \caption{Output power over gain, \SI{0}{\deci\belfs} at two different \gls{rf} frequencies}
 \end{figure}
-Measurements were done at \SI{0}{\deci\belfs} and \SI{-1.94}{\deci\belfs}. The
-results can be seen in \cref{fig:outputrf08,fig:outputrf1}. AMP2 \cite{amp2} and AMP3
-\cite{amp3} are the main cause for the loss in gain over the frequency range.
+
+Data shown in \cref{fig:outputrf1,fig:outputrf4} was corrected to \SI{0}{\deci\belfs}. The
+two graphs visualized output power over gain. While in \cref{fig:outputrf1} compression
+is noticeable, \cref{fig:outputrf4} is nearly linear. Since only ATT2 attenuation was
+changed during measurements, this means the compression can only be caused by Part A
+in \cref{fig:usrp}.
 
 \subsection{IF Frequency Response}
 \label{sec:ifsetup}
