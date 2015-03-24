@@ -1654,7 +1654,9 @@ to $\SI{1}{\giga\hertz} + \SI{0.5}{\mega\hertz}$ and the other one to $\SI{1}{\g
 - \SI{0.5}{\mega\hertz}$. In order to keep the intermodulation products independent of the
 phase, the generators were not synchronized. These frequency settings result in third order
 intermodulation products at $\SI{1}{\giga\hertz} + \SI{1.5}{\mega\hertz}$ and
-$\SI{1}{\giga\hertz} - \SI{1.5}{\mega\hertz}$, which were measured with a spectrum analyzer.
+$\SI{1}{\giga\hertz} - \SI{1.5}{\mega\hertz}$. The power of the spectral components was
+measured with the matlab function \lstinline[language=matlab]{bandpower} with a window
+size of \SI{100}{\kilo\hertz}.
 
 All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
 and with \SI{16}{\bit} per sample.
@@ -1662,7 +1664,7 @@ and with \SI{16}{\bit} per sample.
 Measured samples were corrected by a second measurement with a power meter in place of the
 \gls{usrp}, to get the power levels as if they were directly applied at the input port.
 
-Stepping the gain of ATT1 (see \cref{fig:usrp}), did not result in noticeable
+Stepping the gain of ATT1 (see \cref{fig:usrp}) did not result in noticeable
 intermodulation products. Because of this, the measurement was taken at a fixed
 gain setting of \SI{31.5}{\deci\bel}, while stepping the signal power.
 
@@ -1690,11 +1692,11 @@ caused by Part B in \cref{fig:usrp}.
         \legend{$out$,$IM_3$,$IP_3$}
     \end{axis}
 \end{tikzpicture}
-    \caption{RX IP3}
+    \caption{\gls{rx} IP3}
     \label{fig:rxip3}
 \end{figure}
 
-The points shown in \cref{fig:rxip3}, show the measured samples. $IM_3$-samples
+The points in \cref{fig:rxip3} show the measured samples. $IM_3$-samples
 below the input power of \SI{-43}{\deci\belm} were not increasing with the input
 power, because they were below the range of the \gls{adc}. The last $IM_3$ sample
 with a significant higher value then the others, was taken at a higher level, then
@@ -1727,8 +1729,29 @@ values are: $IIP_3 = \SI{-7.6}{\deci\belm}$ and $OIP_3 = \SI{25.5}{\deci\belfs}$
     \label{fig:txipsetup}
 \end{figure}
 
-Multiple measurements with random phases were taken.
+Measurements were taken with the setup in \cref{fig:txipsetup}. The \SI{16}{\deci\bel}
+attenuator was needed, to be able to do calibration measurements. Those were taken with
+a power meter, which had a more limited range, in place of the spectrum analyzer.
 
+The \gls{usrp} was set to a center frequency of \SI{2}{\giga\hertz}. Samples for a dual
+tone signal with \gls{if} frequencies of \SI{+0.5}{\mega\hertz} and \SI{-0.5}{\mega\hertz}
+were sent to the \gls{usrp}. This resulted in third order intermodulation products at
+\SI{+1.5}{\mega\hertz} and \SI{-1.5}{\mega\hertz}, which were measured with a spectrum analyzer.
+
+Since it is not possible to use two generators without modifying the \gls{usrp}, multiple
+measurements with random phases were taken. Those measurements were average, to get results,
+that are independent of the phase.
+
+All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
+and with \SI{16}{\bit} per sample.
+
+Measured samples were corrected by the forward transfer function of the cable with the
+attenuator attached, which was measured with a network analyzer.
+
+Since changing the gain setting of ATT2 (see \cref{fig:usrp}) did not result in
+measurable intermodulation products, ATT2 was set to a fixed gain setting of
+\SI{20}{\deci\bel}. This also means, that like in \cref{sec:iprx}, the intermodulation
+products shown are caused by Part B in \cref{fig:usrp}.
 
 \begin{figure}[htb]
     \centering
@@ -1736,7 +1759,7 @@ Multiple measurements with random phases were taken.
     \begin{axis}[
         legend pos = south east,
         ylabel={output power},
-        xlabel={input power},
+        xlabel={adc power},
         x unit={\deci\belfs},
         y unit={\deci\belm},
         width=\linewidth,
@@ -1751,16 +1774,23 @@ Multiple measurements with random phases were taken.
         \legend{$out$,$IM_3$,$IP_3$}
     \end{axis}
 \end{tikzpicture}
-    \caption{TX IP3}
+    \caption{\gls{tx} IP3}
     \label{fig:txip3}
 \end{figure}
-Stepping the gain or changing the settings on the ZVL did not result
-in intermodulation products. Because of this the measurement was done
-at a fixed gain setting of \SI{20}{\deci\bel}. This also means that
-the intermodulation products in \cref{fig:txip3} are caused by the ADC.
+
+The results in \cref{fig:txip3} show the measured samples of the third order
+intermodulation products ($IM_3$) and the output power ($out$). $IM_3$ samples
+below \SI{-15}{\deci\belfs} \gls{adc} power were discarded, because they were
+below the noise floor.
+
+The third order intercept point was calculated in the same way as in \cref{sec:iprx}
+described. The resulting values are: $IIP_3 = \SI{14.7}{\deci\belfs}$ and
+$OIP_3 = \SI{40.5}{\deci\belm}$.
+
 %======================================================================
 \clearpage
 \section{Conclusions}
+
 %======================================================================
 \clearpage
 \begin{appendix}
