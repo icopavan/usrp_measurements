@@ -1481,7 +1481,7 @@ fully compensated.
     \begin{tikzpicture}
         \draw node[dut] (dut) {};
         \draw node[right=of dut,attenuator,label=below:\SI{16}{\deci\bel}] (att) {};
-        \draw node[right=of att,powermeter] (dst) {};
+        \draw node[right=of att,spectrum analyzer] (dst) {};
         \draw node[draw,rounded corners,below=of dut] (meas) {\begin{tabular}{l}PC \\ Matlab\end{tabular}};
 
         \draw[dashed] (meas) -- (dut);
@@ -1599,88 +1599,82 @@ of \SI{20}{\mega\hertz} mentioned in \cref{sec:usrp} is also observable.
 
 \clearpage
 \subsection{Intermodulation Properties}
-\label{sec:imsetup}
-\begin{figure}[htb]
-    \begin{subfigure}[t]{.5\linewidth}
-        \centering
-        \scalebox{0.8}{
-        \begin{tikzpicture}
-            \matrix (m) [matrix of nodes,
-                row sep=1cm,
-                column sep=1cm,
-                ampersand replacement=\&,
-                nodes={draw,
-                    line width=1pt,
-                    anchor=center, 
-                    text centered,
-                    minimum width=1.5cm,
-                    minimum height=8mm
-                }]
-            {
-                |[rounded corners]| USRP \& |[shape=circle]| splitter \& \SI{10}{\deci\bel} attn \\
-                \& \SI{10}{\deci\bel} attn \& DC Block \\
-                     \& DC Block \& |[rounded corners]| SMIQ\\
-                     \& |[rounded corners]| SMBV \& |[rounded corners]| GPIB bridge \\
-                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
-            };
-            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {RX} (m-1-2) -- (m-1-3) -- (m-2-3) -- (m-3-3);
-            \draw[double,thick] (m-1-2) -- (m-2-2) -- (m-3-2) -- (m-4-2);
-            \draw[dashed] (m-5-1) -- node [pos=0.05,auto] {eth0} (m-1-1);
-            \draw[rounded corners,dashed] (m-5-1)  -| node [pos=0.12,auto] {eth1} (m-4-2);
-            \draw[rounded corners,dashed] (m-5-1)  -| (m-4-3);
-            \draw[rounded corners,dashdotted] (m-4-3) -- (m-3-3);
-        \end{tikzpicture}
-        }
-        \caption{RX}
-    \end{subfigure}
-    \begin{subfigure}[t]{.5\linewidth}
-        \centering
-        \scalebox{0.8}{
-        \begin{tikzpicture}
-            \matrix (m) [matrix of nodes,
-                row sep=1cm,
-                column sep=1cm,
-                ampersand replacement=\&,
-                nodes={draw,
-                    line width=1pt,
-                    anchor=center, 
-                    text centered,
-                    minimum width=1.5cm,
-                    minimum height=8mm
-                }]
-            {
-                |[rounded corners]| USRP \& \SI{16}{\deci\bel} attn \& |[rounded corners]| ZVL \\
-                |[rounded corners]| \begin{tabular}{l}PC \\ Matlab\end{tabular} \& \\
-            };
-            \draw[dashed] (m-2-1) -- node [pos=0.25,auto] {eth0} (m-1-1);
-            \draw[rounded corners,dashed] (m-2-1)  -| node [pos=0.05,auto] {eth1} (m-1-3);
-            \draw[double,thick] (m-1-1) -- node [pos=0.3,auto] {TX} (m-1-2) -- (m-1-3);
-        \end{tikzpicture}
-        }
-        \caption{TX}
-    \end{subfigure}
-    \caption{Intermodulation properties measurement setup}
-    \label{fig:imsetup}
-\end{figure}
-TX measurement used the same setup as described in \cref{sec:ifsetup}. Multiple
-measurements with random phases were taken.
-
-At first for RX a similar measurement setup as in \cref{sec:rfsetup} was attempted,
-but it was not possible to generate a signal free of intermodulation products with
-the SMBV. With the ZVL, it was verified, that those products are caused by the
-SMBV. This led to the setup in \cref{fig:imsetup}. This setup utilized a Mini-Circuits
-ZFRSC-183+ power splitter/combiner. Since this is a resistive power splitter, it has
-very poor isolation\cite{pwrsplit}. In order to prevent the signal generators from
-distorting the output because of this coupling the \SI{10}{\deci\bel} attenuator
-and the DC block were used.
-
 \subsubsection{RX}
+\label{sec:iprx}
+\begin{figure}[htb]
+    \centering
+    \begin{tikzpicture}
+        \draw node[dut] (dut) {};
+        \draw node[splitter,right=of dut] (split) {};
+        \draw node[attenuator,right=of split.north east,yshift=1mm,label=above:\SI{10}{\deci\bel}] (att1) {};
+        \draw node[attenuator,right=of split.south east,yshift=-1mm,label=below:\SI{10}{\deci\bel}] (att2) {};
+        \draw node[dc block,right=of att1] (dc1) {};
+        \draw node[dc block,right=of att2] (dc2) {};
+        \draw node[generator,right=of dc1] (src1) {};
+        \draw node[generator,right=of dc2] (src2) {};
+        \draw node[coordinate,right=of src2] (sw) {};
+
+        \draw node[draw,rounded corners,below=of dut] (meas) {\begin{tabular}{l}PC \\ Matlab\end{tabular}};
+
+
+        \draw[dashed] (meas) -- (dut);
+        \draw (meas.north) node[anchor=south east] {\tiny eth0};
+        \draw[rounded corners,dashed] (meas) -| (sw) -- (src2);
+        \draw[rounded corners,dashed] (sw) |- (src1);
+        \draw (meas.east) node[anchor=south west] {\tiny eth1};
+
+        \draw[open triangle 45-] (dut) -- (split.A1);
+        \foreach \i in {1,2}
+        {
+            \draw[open triangle 45-] (split.B\i) -| ($(split)!.5!(att\i)$) |- (att\i.A);
+            \draw[open triangle 45-] (att\i) -- (dc\i);
+            \draw[open triangle 45-] (dc\i) -- (src\i);
+        }
+
+        \draw (dut.east) node[anchor=south west] {\tiny RX};
+    \end{tikzpicture}
+    \caption{\gls{rx} IP3 measurement setup}
+    \label{fig:rxipsetup}
+\end{figure}
+
+At first the same measurement setup as in \cref{fig:rxifsetup} was attempted,
+but it was not possible to generate a signal free of intermodulation products with
+the used vector generator (see \cref{sec:meters}).
+
+This led to the setup in \cref{fig:rxipsetup}. This setup utilized a resistive power
+splitter/combiner, to combine the signals from the two generators. To prevent the signal
+generators from interfering with each other, an additional \gls{dc} blocker and a
+\SI{10}{\deci\bel} attenuator were used. Without these precautions, the generators
+might detect the output of the other one and therefor lower the output power, to keep
+the signal at the requested level. This is the case, because resistive power splitters
+have very poor isolation of around \SI{6}{\deci\bel}.
+
+The \gls{usrp} was set to a center frequency of \SI{1}{\giga\hertz}, one generator
+to $\SI{1}{\giga\hertz} + \SI{0.5}{\mega\hertz}$ and the other one to $\SI{1}{\giga\hertz}
+- \SI{0.5}{\mega\hertz}$. In order to keep the intermodulation products independent of the
+phase, the generators were not synchronized. These frequency settings result in third order
+intermodulation products at $\SI{1}{\giga\hertz} + \SI{1.5}{\mega\hertz}$ and
+$\SI{1}{\giga\hertz} - \SI{1.5}{\mega\hertz}$, which were measured with a spectrum analyzer.
+
+All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
+and with \SI{16}{\bit} per sample.
+
+Measured samples were corrected by a second measurement with a power meter in place of the
+\gls{usrp}, to get the power levels as if they were directly applied at the input port.
+
+Stepping the gain of ATT1 (see \cref{fig:usrp}), did not result in noticeable
+intermodulation products. Because of this, the measurement was taken at a fixed
+gain setting of \SI{31.5}{\deci\bel}, while stepping the signal power.
+
+This also means, that the intermodulation products shown in \cref{fig:rxip3} are
+caused by Part B in \cref{fig:usrp}.
+
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
     \begin{axis}[
         legend pos = south east,
-        ylabel={output power},
+        ylabel={adc power},
         xlabel={input power},
         y unit={\deci\belfs},
         x unit={\deci\belm},
@@ -1691,19 +1685,51 @@ and the DC block were used.
         \addplot[only marks, mark = +] table {data/ip3/rx/la};
         \addplot[only marks, mark = x] table {data/ip3/rx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/rx/pim3};
-        \addplot[domain = -93:-35, samples = 201,green] {1*x+33.0765};
-        \addplot[domain = -93:-35, samples = 201,red] {3*x+111.2541};
+        \addplot[domain = -63:-5, samples = 201,green] {1*x+33.0765};
+        \addplot[domain = -63:-5, samples = 201,red] {3*x+48.2541};
         \legend{$out$,$IM_3$,$IP_3$}
     \end{axis}
 \end{tikzpicture}
     \caption{RX IP3}
     \label{fig:rxip3}
 \end{figure}
-Stepping the gain did not result in noticeable intermodulation products.
-Because of this the measurement was done at a fixed gain setting of
-\SI{31.5}{\deci\bel}. This also means that the intermodulation products
-in \cref{fig:rxip3} are caused by the DAC.
+
+The points shown in \cref{fig:rxip3}, show the measured samples. $IM_3$-samples
+below the input power of \SI{-43}{\deci\belm} were not increasing with the input
+power, because they were below the range of the \gls{adc}. The last $IM_3$ sample
+with a significant higher value then the others, was taken at a higher level, then
+the \gls{adc} can measure. This causes severe distortion and this value had to be
+discarded.
+
+Both $IM_3$ and $out$ were fitted to curves according to the formula $3*x+a$ resp.
+$1*x+a$. The point were both meet is the third order intercept point. The calculated
+values are: $IIP_3 = \SI{-7.6}{\deci\belm}$ and $OIP_3 = \SI{25.5}{\deci\belfs}$.
+
 \subsubsection{TX}
+\label{sec:iptx}
+\begin{figure}[htb]
+    \centering
+    \begin{tikzpicture}
+        \draw node[dut] (dut) {};
+        \draw node[right=of dut,attenuator,label=below:\SI{16}{\deci\bel}] (att) {};
+        \draw node[right=of att,spectrum analyzer] (dst) {};
+        \draw node[draw,rounded corners,below=of dut] (meas) {\begin{tabular}{l}PC \\ Matlab\end{tabular}};
+
+        \draw[dashed] (meas) -- (dut);
+        \draw (meas.north) node[anchor=south east] {\tiny eth0};
+        \draw[rounded corners,dashed] (meas) -| (dst);
+        \draw (meas.east) node[anchor=south west] {\tiny eth1};
+        \draw[-open triangle 45] (dut) -- (att);
+        \draw (dut.east) node[anchor=south west] {\tiny TX};
+        \draw[-open triangle 45] (att) -- (dst);
+    \end{tikzpicture}
+    \caption{\gls{tx} IP3 measurement setup}
+    \label{fig:txipsetup}
+\end{figure}
+
+Multiple measurements with random phases were taken.
+
+
 \begin{figure}[htb]
     \centering
 \begin{tikzpicture}
@@ -1720,8 +1746,8 @@ in \cref{fig:rxip3} are caused by the DAC.
         \addplot[only marks, mark = +] table {data/ip3/tx/la};
         \addplot[only marks, mark = x] table {data/ip3/tx/im3};
         \addplot[only marks, mark = asterisk] table {data/ip3/tx/pim3};
-        \addplot[domain = -27:17, samples = 201,green] {1*x-4.2330};
-        \addplot[domain = -27:17, samples = 201,red] {3*x-33.6197};
+        \addplot[domain = -27:17, samples = 201,green] {1*x+25.767};
+        \addplot[domain = -27:17, samples = 201,red] {3*x-3.6197};
         \legend{$out$,$IM_3$,$IP_3$}
     \end{axis}
 \end{tikzpicture}
@@ -1738,7 +1764,7 @@ the intermodulation products in \cref{fig:txip3} are caused by the ADC.
 %======================================================================
 \clearpage
 \begin{appendix}
-\section{Measurement results and Source Code}
+\section{Measurement data and source code}
 \label{sec:sources}
 All the raw data, processed results and sources can be found at
 \url{https://github.com/notti/usrp_measurements}.
@@ -1750,12 +1776,6 @@ Ethernet connectivity, an Agilent E85810 GPIB Etheret bridge provided the necess
 conversion. Power measurements have been carried out with an Agilent N1914A Power Meter and an
 Agilent E9301A averaging Power Sensor. A Rhode \& Schwarz ZVL was used to carry out
 spectrum measurements and measure cable losses.
-
-\section*{Copyright}
-This work is licensed under the Creative Commons Attribution 4.0 International
-License. To view a copy of this license, visit
-\url{http://creativecommons.org/licenses/by/4.0/} or send a letter to Creative
-Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 \printglossary[type=\acronymtype]
 

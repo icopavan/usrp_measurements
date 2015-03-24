@@ -1,15 +1,15 @@
 load('13-Feb-2015/caltx_ip3.mat');
 
-corr = pow2db(mean(db2pow(res(1,15,:) - gain))/2);
+corr = pow2db(mean(db2pow(res(1,15,:)))/2);
 cable = dlmread('13-Feb-2015/kabel16_13feb.s2p', '\t', 5, 0);
 cable = mag2db(abs(cable(33,6)+1j*cable(33,7)));
 
 load('13-Feb-2015/tx_ip3.mat');
-corr = corr - (res(1,15,2) - gain);
+corr = corr - (res(1,15,2));
 
 X = mag2db(0.5*res(1,:,1));
-La = pow2db(mean(db2pow(res(:,:,2)- gain - corr - cable)));
-LIM3 = pow2db(mean(db2pow(res(:,:,4) - gain - corr - cable)));
+La = pow2db(mean(db2pow(res(:,:,2) - corr - cable)));
+LIM3 = pow2db(mean(db2pow(res(:,:,4) - corr - cable)));
 
 basedir = '../tex/data/ip3/tx/';
 

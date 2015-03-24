@@ -551,4 +551,60 @@
     \pgfusepath{draw}
 }
 
+\pgfrfdeclaremonopole{spectrum analyzer}{
+    \pgfpathmoveto{\pgfpoint{0.7\pgf@circ@res@down}{0.8\pgf@circ@res@left}}
+    \pgfpathlineto{\pgfpoint{0.7\pgf@circ@res@down}{0.7\pgf@circ@res@right}}
+    \pgfpathmoveto{\pgfpoint{0.8\pgf@circ@res@down}{0.7\pgf@circ@res@left}}
+    \pgfpathlineto{\pgfpoint{0.7\pgf@circ@res@up}{0.7\pgf@circ@res@left}}
+    \pgfusepath{draw}
+
+    \pgfsetcornersarced{\pgfpoint{2pt}{1pt}}
+    \pgfpathmoveto{\pgfpoint{0.7\pgf@circ@res@left}{0.6\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{0.55\pgf@circ@res@left}{0.6\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{0.5\pgf@circ@res@left}{0.4\pgf@circ@res@up}}
+    \pgfpathlineto{\pgfpoint{0.45\pgf@circ@res@left}{0.6\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{0.05\pgf@circ@res@left}{0.6\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{0}{0.6\pgf@circ@res@up}}
+    \pgfpathlineto{\pgfpoint{0.05\pgf@circ@res@right}{0.6\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{0.45\pgf@circ@res@right}{0.6\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{0.5\pgf@circ@res@right}{0.4\pgf@circ@res@up}}
+    \pgfpathlineto{\pgfpoint{0.55\pgf@circ@res@right}{0.6\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{0.7\pgf@circ@res@right}{0.6\pgf@circ@res@down}}
+    \pgfusepath{draw}
+}
+
+\pgfrfdeclaretripole{splitter}{
+    \pgfscope             
+        \pgftransformshift{\pgfpoint{0.5\pgf@circ@res@right}{0}}
+        \pgftransformscale{.2}
+        \pgftransformrotate{-90}
+        \pgfnode{resistorshape}{center}{}{pgf@att}{\pgfusepath{stroke}}
+    \endpgfscope
+    \pgfpathmoveto{\pgfpoint{\pgf@circ@res@left}{0}}
+    \pgfpathlineto{\pgfpoint{.5\pgf@circ@res@left}{0}}
+    \pgfpathlineto{\pgfpoint{.5\pgf@circ@res@right}{.5\pgf@circ@res@up}}
+    \pgfpathlineto{\pgfpoint{\pgf@circ@res@right}{.5\pgf@circ@res@up}}
+    \pgfpathmoveto{\pgfpoint{.5\pgf@circ@res@left}{0}}
+    \pgfpathlineto{\pgfpoint{.5\pgf@circ@res@right}{.5\pgf@circ@res@down}}
+    \pgfpathlineto{\pgfpoint{\pgf@circ@res@right}{.5\pgf@circ@res@down}}
+    \pgfpathmoveto{\pgfpointanchor{pgf@att}{east}}
+    \pgfpathlineto{\pgfpoint{.5\pgf@circ@res@right}{.5\pgf@circ@res@down}}
+    \pgfpathmoveto{\pgfpointanchor{pgf@att}{west}}
+    \pgfpathlineto{\pgfpoint{.5\pgf@circ@res@right}{.5\pgf@circ@res@up}}
+    \pgfusepath{draw}
+}
+
+\pgfrfdeclarebipole{dc block}{
+    \pgfscope             
+        \pgftransformscale{.5}
+        \pgfnode{capacitorshape}{center}{}{pgf@att}{\pgfusepath{stroke}}
+    \endpgfscope
+    \pgfpathmoveto{\pgfpoint{\pgf@circ@res@left}{0}}
+    \pgfpathlineto{\pgfpointanchor{pgf@att}{b}}
+    \pgfpathmoveto{\pgfpoint{\pgf@circ@res@right}{0}}
+    \pgfpathlineto{\pgfpointanchor{pgf@att}{a}}
+    \pgfusepath{draw}
+
+}
+
 \makeatother
