@@ -1120,6 +1120,9 @@ In order not to interfere with the high data rate needed by the \gls{usrp},
 every measurement setup used a dedicated network connection for the measurement
 devices and the \gls{usrp}. A list of the used meters can be found in \cref{sec:meters}.
 
+All the measurements were taken with an uncalibrated device, to not distort the measurements
+and be able to see the effects.
+
 \subsection{RF Frequency Response}
 \subsubsection{RX}
 \label{sec:rfrx}
@@ -1791,6 +1794,49 @@ $OIP_3 = \SI{40.5}{\deci\belm}$.
 \clearpage
 \section{Conclusions}
 
+The \gls{usrp} device and GNU Radio worked out of the box. No configuration
+was needed and the device just needed to be plugged in. This is in part because
+of the open design, which means, that every schematic and the source code is online
+available. This approach leads to a higher number of contributors, fixing bugs
+and improving the design, which wouldn't be possible with a closed design. Another
+reason is that the device was specifically designed for GNU Radio. One down side
+of this is, that the whole platform is not a still standing target, which can cause
+the drivers and the hardware to mismatch easily. Because of this always the latest
+driver and hardware firmware should be used (see \cref{sec:usrp}).
+
+Via interchangeable daughter boards, a very wide frequency range is supported by
+the \gls{usrp}. In combination with up to \SI{16}{\bit} sample resolution and the
+sample rate of up to \SI{50}{\mega\samples\per\second} a wide range of applications
+is possible. These high sample rates imply a significant strain on the network
+and computer hardware used. To achieve the best performance a dedicated network
+card with a direct link should be used to connect the \gls{usrp} with the computer.
+It is also advisable to shut down every unneeded software. Profiling \gls{volk},
+as mentioned in \cref{sec:intgnu} is absolutely necessary.
+
+It is also important to be aware of the difference between the Ettus Research
+\gls{usrp} and the \gls{ni} version. While the Ettus Research version uses
+\SI{40}{\mega\hertz} filters for LP2 and LP5 in \cref{fig:usrp}, the \gls{ni}
+version uses \SI{20}{\mega\hertz} instead. This was verified in
+\cref{sec:ifrx,sec:iftx} and is mentioned in a figure in \cite{ni_29xx} only.
+
+As can be seen in \cref{sec:rfrx,sec:rftx,sec:ifrx,sec:iftx}, without calibration
+there is a noticeable \gls{iq} imbalance and \gls{dc} offset. Demanding 
+radio applications won't work with an uncalibrated device.
+
+In the \Gls{tx} path, there is a compression at low center frequencies with high
+gain settings (see \cref{fig:outputrf1}). This limits the possible output power
+and additional an amplifier is needed for high power applications.
+
+Because of the design of the \gls{ddc} and \gls{duc} chain (see
+\cref{sec:dsprx,sec:dsptx}), there is noticeable \gls{cic} rolloff if only one
+half band filter is active. With odd decimation rates no half band filter is
+active and the \gls{cic} is not compensated. The driver puts out a warning
+message, if this is the case. Because of this only decimation/interpolation rates
+divisible by four, or a compensating filter should be used. The \gls{tx} shows
+a slight \gls{cic} rolloff despite both half band filters being active (see
+\cref{fig:iftx}). This should be verified in a future work and the filter
+coefficients of the half band filters validated.
+
 %======================================================================
 \clearpage
 \begin{appendix}
@@ -1814,5 +1860,16 @@ spectrum measurements and measure cable losses.
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,literature}
 \end{appendix}
+
+\clearpage
+\section*{Code of Conduct}
+Hiermit erkl\"are ich, dass die vorliegende Arbeit ohne unzul\"assige Hilfe Dritter und ohne Benutzung
+anderer als der angegebenen Hilfsmittel angefertigt wurde. Die aus anderen Quellen oder indirekt
+\"ubernommenen Daten und Konzepte sind unter Angabe der Quelle gekennzeichnet.
+Die Arbeit wurde bisher weder im In– noch im Ausland in gleicher oder in \"ahnlicher Form in anderen
+Pr\"ufungsverfahren vorgelegt.
+
+\par\noindent\makebox[7cm]{\hrulefill}      \hfill\makebox[5cm]{\hrulefill}%
+\par\noindent\makebox[7cm][l]{Unterschrift} \hfill\makebox[5cm][l]{Datum}%
 
 \end{document}
