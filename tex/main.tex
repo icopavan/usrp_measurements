@@ -2,9 +2,6 @@
 \KOMAoption{bibliography}{totoc}
 \KOMAoption{listof}{totoc}
 
-%display boundaries
-%\usepackage{showframe}
-
 \usepackage{cite}
 \usepackage[pdftex]{graphicx}
 \graphicspath{{graphics/}}
@@ -201,12 +198,25 @@ captionpos=b,escapeinside={(*}{*)}}
 \tableofcontents
 \clearpage
 \begin{abstract}
-    The low cost Ettus Research \gls{usrp} 
-    combined with GNU Radio enables implementing cheap and simple radio solutions.
-    This allows rapid prototyping of new radio protocols, easier test setups for
-    lab purposes and even reconstructing old analog communications hardware on a
-    budget. Although Ettus Research provides schematics, source code, and documentation,
-    there is no data available on the RF characteristics of \gls{usrp} devices.
+The software defined radio platform characterized in this bachelor thesis is Ettus
+Research \gls{usrp}. The characterization consists of a \gls{rf} frequency response,
+a \gls{if} frequency response and the intermodulation properties. Small signal
+behaviour and compression effects are described with the frequency responses. Non
+linearities are characterized by the intermodulation properties. These results
+are needed, to be able to create applications with this platform.
+
+This work starts with a full description of the inner workings of the analog and
+the digital part of the platform, which was elaborated from the freely available
+source codes.
+
+After this GNU Radio and matlab scripts, to automate the measurements, were
+developed. GNU Radio usage is described in this work based on these scripts.
+
+The processed results, measurement setups, and discussions can be found in
+the second part of this work.
+
+The third part contains a summary, conclusions and ideas for further work.
+
 \end{abstract}
 \clearpage
 \section{Introduction}
