@@ -596,6 +596,21 @@ Another use case is shifting undesired frequencies out of the band of
 interest by applying an offset to the \gls{lo} frequency and correcting
 it using the \gls{cordic} stage.
 
+Downsampling is implemented using an interpolating \gls{cic} followed by two
+interpolating half band filters. The \gls{cic} is a \gls{fir} filter, where every tap has
+a value of one. This simplifies the design to an input stage consisting
+of a series of integrators, followed by the decimation, which leaves out every
+$n$th sample, and finally a comb section (see \cref{fig:cicdecim}). Unlike different filter solutions
+a \gls{cic} needs no multipliers, no coefficient storage, half the filter is
+clocked with the lower rate, and a wide range of decimation ratios is possible. The down
+side of this approach is a gain droop in the passband (see \cref{fig:cicresponse}), resulting in a smaller
+passband, and a limited range of possible filter characteristics\cite{hog81}.
+Another implementation detail is that the bit growth at every stage needs to
+be carried until the last stage, which results in the internal bit width of
+\SI{52}{\bit}. This bit growth depends on the decimation rate\cite{hog81} and
+the output of the filter is shifted according to this rate. The \gls{cic} in
+\cref{fig:rxpath} consists of four stages and allows decimation rates from 1 to 128.
+
 \begin{figure}[htb]
     \begin{subfigure}[c]{.49\linewidth}
         \centering
@@ -607,14 +622,14 @@ it using the \gls{cordic} stage.
             \draw node[right=of isaA1] (contA1) {$\dotsc$};
             \draw node[above=of contA1] {$\dotsc$};
             \draw node[dspadder,right=of contA1] (isaA2) {};
-            \draw node[dspsquare,above=of isaA2,label=above:Stage $N$] (isdA2) {$z^{-1}$};
+            \draw node[dspsquare,above=of isaA2,label=above:Stage 4] (isdA2) {$z^{-1}$};
             \draw node[dspsquare,right=of isaA2] (sw) {$\downsamplertext{R}$};
-            \draw node[dspadder,right=of sw] (isaB1) {};
-            \draw node[dspsquare,above=of isaB1,label=above:Stage 1] (isdB1) {$z^{-2}$};
+            \draw node[dspadder,right=of sw,label={[label distance=-1mm]60:{-}}] (isaB1) {};
+            \draw node[dspsquare,above=of isaB1,label=above:Stage 1] (isdB1) {$z^{-1}$};
             \draw node[right=of isaB1] (contB1) {$\dotsc$};
             \draw node[above=of contB1] {$\dotsc$};
-            \draw node[dspadder,right=of contB1] (isaB2) {};
-            \draw node[dspsquare,above=of isaB2,label=above:Stage $N$] (isdB2) {$z^{-2}$};
+            \draw node[dspadder,right=of contB1,label={[label distance=-1mm]60:{-}}] (isaB2) {};
+            \draw node[dspsquare,above=of isaB2,label=above:Stage 4] (isdB2) {$z^{-1}$};
             \draw node[dspnodeopen,right=of isaB2] (out) {};
 
             \foreach \i in {A,B} {
@@ -651,53 +666,41 @@ it using the \gls{cordic} stage.
                     y unit={\deci\bel},
                     ymin=-150,
                     xmin=0,
-                    xmax=2,
+                    xmax=2.5,
                     width=\linewidth,
                     style={font=\tiny}
                 ]
                 \pgfplotsextra{\clip (axis cs:-1,-150) rectangle (axis cs:3,10);}
-                \addplot[black,domain=0:2,samples=501,name path=A] {10*log10((sin(deg(pi*2*x))/sin(deg(pi*x/4)))^8) - 72.24};
+                \addplot[black,domain=0:2.5,samples=301,name path=A] {10*log10((sin(deg(pi*x))/sin(deg(pi*x/4)))^8) - 10*log10(65536)/log10(10)};
                 \path[name path=B] (\pgfkeysvalueof{/pgfplots/xmin},-150) -- (\pgfkeysvalueof{/pgfplots/xmax},-150);
                 
                 \addplot[gray!30] fill between[of=A and B,soft clip={domain=0:0.125},];
                 \addplot[gray!30] fill between[of=A and B,soft clip={domain=0.875:1},];
                 \addplot[gray!30] fill between[of=A and B,soft clip={domain=1:1.125},];
                 \addplot[gray!30] fill between[of=A and B,soft clip={domain=1.875:2},];
+                \addplot[gray!30] fill between[of=A and B,soft clip={domain=2:2.125},];
 
                 \draw[dashed] (0.125,-150) -- (0.125,\pgfkeysvalueof{/pgfplots/ymax});
-                \draw (0.125,0) node[anchor=base west] {\scriptsize $f_c$};
                 \draw[dashed] (0.875,-150) -- (0.875,\pgfkeysvalueof{/pgfplots/ymax});
-                \draw (1,0) node[anchor=base] {\scriptsize $2\cdot{}f_c$};
+                \draw (0.125,-150) node[coordinate] (point1) {};
+                \draw (1,0) node[anchor=base] {\scriptsize $2 f_c$};
                 \draw[dashed] (1.125,-150) -- (1.125,\pgfkeysvalueof{/pgfplots/ymax});
                 \draw[dashed] (1.875,-150) -- (1.875,\pgfkeysvalueof{/pgfplots/ymax});
+                \draw (2,0) node[anchor=base] {\scriptsize $2 f_c$};
+                \draw[dashed] (2.125,-150) -- (2.125,\pgfkeysvalueof{/pgfplots/ymax});
 
                 \draw (0.0625,-50) node[anchor=center,rotate=90] {\scriptsize passband};
                 \draw (1,-50) node[anchor=center,rotate=90] {\scriptsize alias band};
+                \draw (2,-50) node[anchor=center,rotate=90] {\scriptsize alias band};
 
             \end{axis}
+            \draw (point1) node[anchor=north] {\scriptsize $f_c$};
         \end{tikzpicture}
         \caption{Frequency response}
         \label{fig:cicresponse}
     \end{subfigure}
-    \caption{\gls{cic}}
+    \caption{Implementation and frequency response of four stage \gls{cic}}
 \end{figure}
-
-
-Downsampling is implemented using an interpolating \gls{cic} followed by two
-interpolating half band filters. The \gls{cic} is a \gls{fir} filter, where every tap has
-a value of one. This simplifies the design to an input stage consisting
-of a series of integrators, followed by the decimation, which leaves out every
-$n$th sample, and finally a comb section. Unlike different filter solutions
-a \gls{cic} needs no multipliers, no coefficient storage, half the filter is
-clocked with the lower rate, and a wide range of decimation ratios is possible. The down
-side of this approach is a gain droop in the passband, resulting in a smaller
-passband, and a limited range of possible filter characteristics\cite{hog81}.
-Another implementation detail is that the bit growth at every stage needs to
-be carried until the last stage, which results in the internal bit width of
-\SI{52}{\bit}. This bit growth depends on the decimation rate\cite{hog81} and
-the output of the filter is shifted according to this rate. The \gls{cic} in
-\cref{fig:rxpath} consists of four stages, has a differential delay
-of two, and allows decimation rates from 1 to 128.
 
 To improve the frequency response of the \gls{cic}, it is followed by two half band
 filters. A half band filter is a decimating low pass \gls{fir} filter, which has
@@ -902,8 +905,7 @@ with the tool from Doolittle\cite{halfband}.
 In the \gls{cic}, for interpolation, the integrator and the comb filters are reversed resulting in
 a comb section, followed by an interpolator, which keeps the last $n$ samples,
 and finally a series of integrators (see \cref{sec:dsprx} for a more detailed
-description). This \gls{cic} uses four stages, has a differential delay of two,
-and allows interpolation rates of 1 to 128.
+description). This \gls{cic} uses four stages and allows interpolation rates of 1 to 128.
 
 Frequency mixing is handled by a \gls{cordic} in vector rotation mode. The frequency,
 which needs to be provided as a phase offset, is set automatically by the host driver.
@@ -959,9 +961,9 @@ Every flowgraph has an {\ttfamily Options} block, which determines the name of t
 which \gls{gui} to use for the application ({\ttfamily Generate Options}), and some optional runtime features.
 
 {\ttfamily Parameter} blocks can be used for passing values from either a calling flowgraph or, as has
-been used in this block, for passing values via command line arguments. {\ttfamily Type} specifies the
-data type, {\ttfamily ID} the name of the command line argument and the name of the generated variable,
-and {\ttfamily Value} an optional default.
+been used in this block, for passing values via command line arguments. {\ttfamily ID} specifies the
+name of the command line argument, {\ttfamily Value} an optional default, and {\ttfamily Type} the data
+type of the generated variable.
 
 Besides parameters, signal processing blocks have input and/or output ports. Those ports
 can be connected from output to input. One Output can feed several inputs. Outputs and inputs
@@ -979,7 +981,7 @@ Companion (e.g. conditionally instantiating flowgraph modules).
 
 Although most of the signal module parameters, as can be seen in \cref{fig:grc_rx}, appear to have
 numerical values, they actually reference the generic parameters. GNU Radio Companion always displays the
-default values, if there are any.
+default values of variables and parameters, if there are any.
 
 \subsubsection{Generated Scripts}
 \label{sec:radioscripts}
@@ -1004,50 +1006,50 @@ from optparse import OptionParser
 import time
 
 class rx(gr.top_block): (*\label{line:classdef}*)
-def __init__(self, freq=2.4e9, gain=0, filename="", samples=1000000, lo_off=0, dc=0, samp_rate=50e6, wire=8): (*\label{line:init}*)
-        gr.top_block.__init__(self, "Receiver for Measurements")
-        if wire == 8: (*\label{line:w81}*)
-            otw_format = "sc8"
-            bs = gr.sizeof_char*2
-        elif wire == 16:
-            otw_format = "sc16"
-            bs = gr.sizeof_short*2
+  def __init__(self, freq=2.4e9, gain=0, filename="", samples=1000000, lo_off=0, dc=0, samp_rate=50e6, wire=8): (*\label{line:init}*)
+    gr.top_block.__init__(self, "Receiver for Measurements")
+    if wire == 8: (*\label{line:w81}*)
+      otw_format = "sc8"
+      bs = gr.sizeof_char*2
+    elif wire == 16:
+      otw_format = "sc16"
+      bs = gr.sizeof_short*2
 
-        ################################################## (*\label{line:blockinst}*)
-        # Blocks
-        ##################################################
-        self.uhd_usrp_source_0 = uhd.usrp_source(
-        	device_addr="addr=192.168.10.2",
-        	stream_args=uhd.stream_args(
-        		cpu_format="sc16",
-        		otw_format=otw_format,
-        		channels=range(1),
-        	),
-        )
-        self.uhd_usrp_source_0.set_clock_source("external", 0)
-        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(freq, lo_off), 0)
-        self.uhd_usrp_source_0.set_gain(gain, 0)
-        if dc == 0:
-            self.uhd_usrp_source_0.set_auto_dc_offset(False) (*\label{line:dcoff1}*)
-	    self.uhd_usrp_source_0.set_dc_offset(0)          (*\label{line:dcoff2}*)
-        self.blocks_skiphead_0 = blocks.skiphead(bs, int(samp_rate))
-        if wire == 8: (*\label{line:w82}*)
-        self.blocks_short_to_char_0 = blocks.short_to_char(2) (*\label{line:short}*)
-        self.blocks_head_0 = blocks.head(bs, samples)
-        self.blocks_file_sink_0 = blocks.file_sink(bs, filename, False)
-        self.blocks_file_sink_0.set_unbuffered(False)
+    ################################################## (*\label{line:blockinst}*)
+    # Blocks
+    ##################################################
+    self.uhd_usrp_source_0 = uhd.usrp_source(
+      device_addr="addr=192.168.10.2",
+      stream_args=uhd.stream_args(
+        cpu_format="sc16",
+        otw_format=otw_format,
+        channels=range(1),
+      ),
+    )
+    self.uhd_usrp_source_0.set_clock_source("external", 0)
+    self.uhd_usrp_source_0.set_samp_rate(samp_rate)
+    self.uhd_usrp_source_0.set_center_freq(uhd.tune_request(freq, lo_off), 0)
+    self.uhd_usrp_source_0.set_gain(gain, 0)
+    if dc == 0:
+      self.uhd_usrp_source_0.set_auto_dc_offset(False) (*\label{line:dcoff1}*)
+      self.uhd_usrp_source_0.set_dc_offset(0)          (*\label{line:dcoff2}*)
+    self.blocks_skiphead_0 = blocks.skiphead(bs, int(samp_rate))
+    if wire == 8: (*\label{line:w82}*)
+    self.blocks_short_to_char_0 = blocks.short_to_char(2) (*\label{line:short}*)
+    self.blocks_head_0 = blocks.head(bs, samples)
+    self.blocks_file_sink_0 = blocks.file_sink(bs, filename, False)
+    self.blocks_file_sink_0.set_unbuffered(False)
 
-        ################################################## (*\label{line:conninst}*)
-        # Connections
-        ##################################################
-        if wire == 8: (*\label{line:w83}*)
-            self.connect((self.uhd_usrp_source_0, 0), (self.blocks_short_to_char_0, 0))
-            self.connect((self.blocks_short_to_char_0, 0), (self.blocks_skiphead_0, 0))
-        elif wire == 16:
-            self.connect((self.uhd_usrp_source_0, 0), (self.blocks_skiphead_0, 0))
-        self.connect((self.blocks_skiphead_0, 0), (self.blocks_head_0, 0))
-        self.connect((self.blocks_head_0, 0), (self.blocks_file_sink_0, 0))
+    ################################################## (*\label{line:conninst}*)
+    # Connections
+    ##################################################
+    if wire == 8: (*\label{line:w83}*)
+      self.connect((self.uhd_usrp_source_0, 0), (self.blocks_short_to_char_0, 0))
+      self.connect((self.blocks_short_to_char_0, 0), (self.blocks_skiphead_0, 0))
+    elif wire == 16:
+      self.connect((self.uhd_usrp_source_0, 0), (self.blocks_skiphead_0, 0))
+    self.connect((self.blocks_skiphead_0, 0), (self.blocks_head_0, 0))
+    self.connect((self.blocks_head_0, 0), (self.blocks_file_sink_0, 0))
 (*\label{line:setters}*)
 if __name__ == '__main__': (*\label{line:main}*)
     parser = OptionParser(option_class=eng_option, usage="%prog: [options]")
@@ -1061,7 +1063,7 @@ if __name__ == '__main__': (*\label{line:main}*)
     parser.add_option("", "--wire", dest="wire", type="intx", default=8, help="Set wire [default=%default]")
     (options, args) = parser.parse_args()
     if gr.enable_realtime_scheduling() != gr.RT_OK:
-        print "Error: failed to enable realtime scheduling."
+      print "Error: failed to enable realtime scheduling."
     tb = rx(freq=options.freq, gain=options.gain, filename=options.filename, samples=options.samples, lo_off=options.lo_off, dc=options.dc, samp_rate=options.samp_rate, wire=options.wire)
     tb.start() (*\label{line:start}*)
     tb.wait() (*\label{line:wait}*)
@@ -1076,9 +1078,7 @@ All the generated scripts contain a class (\cref{line:classdef}), which represen
 and is named according to the {\texttt id} in the {\texttt Options} block. In the
 \lstinline{__init__} function (\cref{line:init}) the whole flowgraph,
 starting with the blocks (\cref{line:blockinst}) followed by the connections
-(\cref{line:conninst}), is instantiated.
-
-Normally GNU Radio Companion would insert get- and set-functions for all
+(\cref{line:conninst}), is instantiated. Normally GNU Radio Companion would insert get- and set-functions for all
 variables in \cref{line:setters}. Those have been removed for clarity from the
 script. They are only needed if the settings need to be changed during runtime.
 This can happen e.g. by changing a slider or pressing a button in the
@@ -1086,7 +1086,8 @@ This can happen e.g. by changing a slider or pressing a button in the
 
 \Cref{line:dcoff1} and \cref{line:dcoff2} in \cref{lst:rxfinal.py} are intended to turn off \gls{dc} offset
 compensation by disabling the accumulator and setting the accumulator value to zero 
-(see \cref{sec:dsprx}). These two settings are not available in the \gls{gui}.
+(see \cref{sec:dsprx}). These two settings are not available in the GNU Radio Companion and can only
+be modified from python.
 
 Several other modifications (\Cref{line:w81,line:w82,line:w83} in \cref{lst:rxfinal.py})
 make the flowgraph more dynamic, to support \SI{8}{\bit} and \SI{16}{\bit} mode with
@@ -1129,14 +1130,10 @@ in this case too, because this waits for a clean shut down.
 
 Drivers that enable using the \gls{usrp} from within Matlab and Simulink are
 provided by Mathworks \cite{matlab_usrp}. These drivers need the Communications
-System Toolbox.
-
-The drivers only support basic functionality, like setting the center frequency
+System Toolbox. The drivers only support basic functionality, like setting the center frequency
 or the decimation rate. It is not possible to set the clock source of the
 \gls{usrp} to external, which is needed for typical \gls{rf} measurements to
-synchronize the instruments.
-
-Another problem which occured during validation of the drivers was, that Matlab
+synchronize the instruments. Another problem which occured during validation of the drivers was, that Matlab
 was too slow for real time data processing at a sample rate of
 \SI{50}{\mega\samples\per\second}.
 
@@ -1174,7 +1171,7 @@ The \gls{rx} script, provided in \cref{lst:usrprx.m} starts with setting
 default values for the arguments (\crefrange{line:argstart}{line:argstop}). To prevent
 adding latencies by writing the data to disk, the sample file gets stored in
 \texttt{/run/shm}, which resides in \gls{ram} (\cref{line:tmp}). This will
-work under linux only. Since overruns get only reported to standard out by
+work under linux only. Since overruns get only reported to standard output by
 GNU Radio, \cref{line:check1,line:check2} count the number of characters in
 the last line of the output and add it to \texttt{status}. If \texttt{status}
 is non zero, then the returned data should not be used.
@@ -1205,14 +1202,13 @@ samples as a vector of complex numbers.
 
 Functions for transmitting samples were also developed and can be found in
 \cref{sec:sources}. These functions are similar to the \gls{rx} version. The
-only added feature is a flag which enables asynchronously sending samples,
-which enables doing measurements from Matlab, while transmitting.
+only added feature is a flag which enables asynchronously sending samples. This
+enables doing measurements from Matlab, while transmitting.
 
+\clearpage
 %======================================================================
 \section{Measurements}
 \label{sec:measurements}
-%All the measurements and the data processing have been done utilizing the following tools:
-%\Cref{sec:rfsetup,sec:ifsetup,sec:imsetup} describe each setup in more detail.
 In order not to interfere with the high data rate needed by the \gls{usrp},
 every measurement setup used a dedicated network connection for the measurement
 devices and the \gls{usrp}. A list of the used meters can be found in \cref{sec:meters}.
@@ -1263,7 +1259,9 @@ frequency was swept from \SI{400}{\mega\hertz} to \SI{4.4}{\giga\hertz} in
 
 These measurements were repeated with a power meter in place of the
 \gls{usrp} and the \gls{usrp} data converted as if the \SI{-14}{\deci\bel}
-were present at the input.
+were present at the input. The measured data was normalized to
+\SI{0}{\deci\belfs} to create the plot in \cref{fig:inputfscrf}.
+This plot depicts the gain needed to reach \SI{0}{\deci\belfs} at selected center frequencies.
 
 \begin{figure}[htb]
     \centering
@@ -1287,12 +1285,10 @@ were present at the input.
     \label{fig:inputfscrf}
 \end{figure}
 
-The measured data was normalized to \SI{0}{\deci\belfs} to create the plot in \cref{fig:inputfscrf}.
-This plot depicts the gain needed to reach \SI{0}{\deci\belfs} at selected center frequencies.
-
 As can been seen in \cref{fig:inputfscrf} the gain setting of the \gls{usrp} scales nearly
 linear up to \SI{30}{\deci\belm}. Higher gain values do not increase the power, because
-the maximum setting is \SI{31.5}{\deci\belm}.
+the maximum setting is \SI{31.5}{\deci\belm}. The host driver saturates the gain setting
+at the maximum setting.
 
 \begin{figure}[htb]
     \centering
@@ -1355,9 +1351,8 @@ Measurements were taken at gain settings ranging from \SI{0}{\deci\bel} to \SI{3
 in \SI{5}{\deci\bel} steps. An additional measurement was taken at the maximal gain
 setting of \SI{31.5}{\deci\bel}. \gls{rf} frequencies ranged from \SI{400}{\mega\hertz} to
 \SI{4.4}{\giga\hertz} in \SI{50}{\mega\hertz} steps. The line format used was
-\SI{8}{\bit} at a sampling rate of \SI{50}{\mega\samples\per\second}.
-
-In order to stay in the linear region of \gls{dac} the generated samples had an amplitude
+\SI{8}{\bit} at a sampling rate of \SI{50}{\mega\samples\per\second}. In order to stay
+in the linear region of \gls{dac} the generated samples had an amplitude
 of $0.8 \times \text{full scale}$.
 
 To get the results at the output port of the \gls{usrp}, the measurement data was corrected
@@ -1384,11 +1379,6 @@ with a network analyzer.
 \caption{Output power over frequency, \SI{0}{\deci\belfs}, \SI{0}{\deci\bel} gain}
     \label{fig:outputrf08}
 \end{figure}
-
-Measurement results in \cref{fig:outputrf08} were normalized as if the measurement
-was taken at full scale, to be able to compare this data to other measurements.
-The frequency response shows a large gain droop, which, according to the datasheets
-is mainly caused by AMP2\cite{amp2} and AMP3\cite{amp3} (see \cref{fig:usrp}).
 
 \begin{figure}[htb]
     \begin{subfigure}[t]{.5\linewidth}
@@ -1426,12 +1416,16 @@ is mainly caused by AMP2\cite{amp2} and AMP3\cite{amp3} (see \cref{fig:usrp}).
     \caption{Output power over gain, \SI{0}{\deci\belfs} at two different \gls{rf} frequencies}
 \end{figure}
 
+Measurement results in \cref{fig:outputrf08} were normalized as if the measurement
+was taken at full scale, to be able to compare this data to other measurements.
+The frequency response shows a large gain droop, which, according to the datasheets
+is mainly caused by AMP2\cite{amp2} and AMP3\cite{amp3} (see \cref{fig:usrp}).
+
 Data shown in \cref{fig:outputrf1,fig:outputrf4} was corrected to \SI{0}{\deci\belfs}. The
 two graphs visualized output power over gain. While in \cref{fig:outputrf1} compression
 is noticeable, \cref{fig:outputrf4} is nearly linear. Since only ATT2 attenuation was
 changed during measurements, this means the compression can only be caused by Part A
 in \cref{fig:usrp}.
-
 
 \subsection{IF Frequency Response}
 \subsubsection{RX}
@@ -1467,10 +1461,8 @@ to \SI{12}{\mega\hertz} in \SI{0.5}{\mega\hertz} steps for \SI{25}{\mega\samples
 Every \gls{if} measurement was repeated for every center frequency from \SI{400}{\mega\hertz}
 to \SI{4.4}{\giga\hertz} in \SI{100}{\mega\hertz} steps. Those measurements were taken
 at \SI{0}{\deci\belm}, \SI{15}{\deci\belm} and \SI{31.5}{\deci\belm}. The signal source was
-set to $\SI{-10}{\deci\belm}-gain$ output power.
-
-For calibration, a power meter was used in place of the \gls{usrp} and the measurement
-data corrected by as if the $\SI{-10}{\deci\belm}-gain$ were present at the input port.
+set to $\SI{-10}{\deci\belm}-gain$ output power. For calibration, a power meter was used in place of the \gls{usrp} and the measurement
+data corrected as if the $\SI{-10}{\deci\belm}-gain$ were present at the input port.
 
 \begin{figure}[htb]
     \centering
@@ -1504,7 +1496,7 @@ in the \gls{rf} frequency direction is uniformly distributed along the \gls{if} 
 These results and different gain settings, which can be found in the \cref{sec:sources},
 reproduce the same result as in \cref{sec:rfrx}.
 
-Since these measurements were taken without DC offset compensation, there is a small peak at 
+Since these measurements were taken without \gls{dc} offset compensation, there is a small peak at 
 \SI{0}{\mega\hertz} \gls{if}, which is caused by DEMOD (see \cref{sec:dsprx}).
 
 \begin{figure}[htb]
@@ -1692,12 +1684,10 @@ compensate the \gls{cic} (see \cref{sec:dsptx}).
 
 Since in \SI{50}{\mega\samples\per\second} mode only one half band filter
 is active (see \cref{sec:dsptx}), \gls{cic} roll of is more noticeable in
-\cref{fig:iftx50} than in \cref{fig:iftx}.
+\cref{fig:iftx50} than in \cref{fig:iftx}. In \cref{fig:iftx50} the effect
+of the filter LP5, which has a cut off frequency of \SI{20}{\mega\hertz}
+mentioned in \cref{sec:usrp} is also observable.
 
-In \cref{fig:iftx50} the effect of the LP5 filter, which has a cut off frequency
-of \SI{20}{\mega\hertz} mentioned in \cref{sec:usrp} is also observable.
-
-\clearpage
 \subsection{Intermodulation Properties}
 \subsubsection{RX}
 \label{sec:iprx}
@@ -1756,20 +1746,9 @@ phase, the generators were not synchronized. These frequency settings result in 
 intermodulation products at $\SI{1}{\giga\hertz} + \SI{1.5}{\mega\hertz}$ and
 $\SI{1}{\giga\hertz} - \SI{1.5}{\mega\hertz}$. The power of the spectral components was
 measured with the matlab function \lstinline[language=matlab]{bandpower} with a window
-size of \SI{100}{\kilo\hertz}.
-
-All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
-and with \SI{16}{\bit} per sample.
-
-Measured samples were corrected by a second measurement with a power meter in place of the
+size of \SI{100}{\kilo\hertz}. All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
+and with \SI{16}{\bit} per sample. Measured samples were corrected by a second measurement with a power meter in place of the
 \gls{usrp}, to get the power levels as if they were directly applied at the input port.
-
-Stepping the gain of ATT1 (see \cref{fig:usrp}) did not result in noticeable
-intermodulation products. Because of this, the measurement was taken at a fixed
-gain setting of \SI{31.5}{\deci\bel}, while stepping the signal power.
-
-This also means, that the intermodulation products shown in \cref{fig:rxip3} are
-caused by Part B in \cref{fig:usrp}.
 
 \begin{figure}[htb]
     \centering
@@ -1796,16 +1775,24 @@ caused by Part B in \cref{fig:usrp}.
     \label{fig:rxip3}
 \end{figure}
 
+Stepping the gain of ATT1 (see \cref{fig:usrp}) did not result in noticeable
+intermodulation products. Because of this, the measurement was taken at a fixed
+gain setting of \SI{31.5}{\deci\bel}, while stepping the signal power. This also means,
+that the intermodulation products shown in \cref{fig:rxip3} are
+caused by Part B in \cref{fig:usrp}.
+
 The points in \cref{fig:rxip3} show the measured samples. $IM_3$-samples
 below the input power of \SI{-43}{\deci\belm} were not increasing with the input
-power, because they were below the range of the \gls{adc}. The last $IM_3$ sample
+power, because they were below the quantization noise of the \gls{adc}. These points
+could be measured by averaging over longer sample periods. The last $IM_3$ sample
 with a significant higher value then the others, was taken at a higher level, then
 the \gls{adc} can measure. This causes severe distortion and this value had to be
 discarded.
 
-Both $IM_3$ and $out$ were fitted to curves according to the formula $3*x+a$ resp.
-$1*x+a$. The point were both meet is the third order intercept point. The calculated
-values are: $IIP_3 = \SI{-7.6}{\deci\belm}$ and $OIP_3 = \SI{25.5}{\deci\belfs}$.
+Both $IM_3$ and $out$ were fitted to curves according to the formula $3\cdot{}x+a$ resp.
+$1\cdot{}x+a$. The point were both meet is the third order intercept point. The calculated
+values are: third order input intercept point $IIP_3 = \SI{-7.6}{\deci\belm}$ and
+third order output intercept point $OIP_3 = \SI{25.5}{\deci\belfs}$.
 
 \subsubsection{TX}
 \label{sec:iptx}
@@ -1840,12 +1827,8 @@ were sent to the \gls{usrp}. This resulted in third order intermodulation produc
 
 Since it is not possible to use two generators without modifying the \gls{usrp}, multiple
 measurements with random phases were taken. Those measurements were average, to get results,
-that are independent of the phase.
-
-All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
-and with \SI{16}{\bit} per sample.
-
-Measured samples were corrected by the forward transfer function of the cable with the
+that are independent of the phase. All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
+and with \SI{16}{\bit} per sample. Measured samples were corrected by the forward transfer function of the cable with the
 attenuator attached, which was measured with a network analyzer.
 
 Since changing the gain setting of ATT2 (see \cref{fig:usrp}) did not result in
@@ -1922,14 +1905,14 @@ radio applications won't work with an uncalibrated device.
 
 In the \Gls{tx} path, there is a compression at low center frequencies with high
 gain settings (see \cref{fig:outputrf1}). This limits the possible output power
-and additional an amplifier is needed for high power applications.
+and an additional amplifier is needed for high power applications.
 
 Because of the design of the \gls{ddc} and \gls{duc} chain (see
 \cref{sec:dsprx,sec:dsptx}), there is noticeable \gls{cic} rolloff if only one
 half band filter is active. With odd decimation rates no half band filter is
 active and the \gls{cic} is not compensated. The driver puts out a warning
 message, if this is the case. Because of this only decimation/interpolation rates
-divisible by four, or a compensating filter should be used. The \gls{tx} shows
+divisible by four, or an additional compensating filter should be used. The \gls{tx} shows
 a slight \gls{cic} rolloff despite both half band filters being active (see
 \cref{fig:iftx}). This should be verified in a future work and the filter
 coefficients of the half band filters validated.
@@ -1956,7 +1939,12 @@ spectrum measurements and measure cable losses.
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,literature}
-\end{appendix}
+
+\section*{Copyright}
+This work is licensed under the Creative Commons Attribution 4.0 International
+License. To view a copy of this license, visit
+\url{http://creativecommons.org/licenses/by/4.0/} or send a letter to Creative
+Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
 
 \clearpage
 \section*{Code of Conduct}
@@ -1969,4 +1957,5 @@ Pr\"ufungsverfahren vorgelegt.
 \par\noindent\makebox[7cm]{\hrulefill}      \hfill\makebox[5cm]{\hrulefill}%
 \par\noindent\makebox[7cm][l]{Unterschrift} \hfill\makebox[5cm][l]{Datum}%
 
+\end{appendix}
 \end{document}
