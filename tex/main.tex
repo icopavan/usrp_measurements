@@ -33,6 +33,7 @@ bookmarksopen=false
 \pgfplotsset{every axis plot/.append style={smooth},every axis/.append style={grid=major,legend style={font=\footnotesize}}} 
 
 \usepgfplotslibrary{units}
+\usepgfplotslibrary{fillbetween}
 \pgfplotsset{unit code/.code 2 args={\si{#1#2}}}
 
 \usepackage{tikz}
@@ -136,7 +137,7 @@ captionpos=b,escapeinside={(*}{*)}}
 \newacronym{ddc}{DDC}{digital down-converter}
 \newacronym{duc}{DUC}{digital up-converter}
 \newacronym[longplural={electrically erasable programmable read-only memories}]{eeprom}{EEPROM}{electrically erasable programmable read-only memory}
-\newacronym{gpio}{GPIO}{general-purpose input/output}
+\newacronym[longplural={general-purpose inputs/outputs}]{gpio}{GPIO}{general-purpose input/output}
 \newacronym{cordic}{CORDIC}{coordinate rotation digital computer}
 \newacronym{cic}{CIC}{cascaded integrator-comb}
 \newacronym{fir}{FIR}{finite impulse response}
@@ -154,20 +155,23 @@ captionpos=b,escapeinside={(*}{*)}}
 \begin{titlepage}
     \enlargethispage{1cm}
     \centering
-    \begin{minipage}{0.49\linewidth}
-        \includegraphics[height=1.5cm,keepaspectratio]{EMCE_Logo_CMYK_color}
-    \end{minipage}
-    \begin{minipage}{0.49\linewidth}
-        \flushright
-        \includegraphics[height=1.5cm,keepaspectratio]{TULogo_CMYK}
-    \end{minipage}\\
+    %\begin{minipage}{0.49\linewidth}
+    %    \includegraphics[height=1.5cm,keepaspectratio]{EMCE_Logo_CMYK_color}
+    %\end{minipage}
+    %\begin{minipage}{0.49\linewidth}
+    %    \flushright
+    %    \includegraphics[height=1.5cm,keepaspectratio]{TULogo_CMYK}
+    %\end{minipage}\\
     \vspace*{5cm}
     {\Huge \textbf{Bachelor thesis}}\\
     \vspace*{1cm}
-    {\Large High-frequency characterization of a Software Defined Radio (SDR) platform}
+    {\Large High-frequency characterization of a \gls{sdr} platform}
 
     \vspace*{2cm}
     {\large Gernot ~\textsc{Vormayr} ~\\ 0425210 } ~\\ 
+
+    \vspace*{2cm}
+    {\today } ~\\ 
 
     \vfill
     {Supervisors} ~\\\vspace*{0.1cm}
@@ -198,24 +202,19 @@ captionpos=b,escapeinside={(*}{*)}}
 \tableofcontents
 \clearpage
 \begin{abstract}
-The software defined radio platform characterized in this bachelor thesis is Ettus
-Research \gls{usrp}. The characterization consists of a \gls{rf} frequency response,
-a \gls{if} frequency response and the intermodulation properties. Small signal
+The software defined radio platform characterized in this bachelor thesis is the Ettus
+Research \gls{usrp}. The characterization consists of a \gls{rf} response,
+a \gls{if} response and the intermodulation properties. Small signal
 behaviour and compression effects are described with the frequency responses. Non
 linearities are characterized by the intermodulation properties. These results
 are needed, to be able to create applications with this platform.
 
 This work starts with a full description of the inner workings of the analog and
 the digital part of the platform, which was elaborated from the freely available
-source codes.
-
-After this GNU Radio and matlab scripts, to automate the measurements, were
-developed. GNU Radio usage is described in this work based on these scripts.
-
-The processed results, measurement setups, and discussions can be found in
-the second part of this work.
-
-The third part contains a summary, conclusions and ideas for further work.
+source codes. After this GNU Radio and matlab scripts, to automate the measurements, were
+developed. GNU Radio usage is described in this work based on these scripts. The
+processed results, measurement setups, and discussions can be found in
+the second part of this work. The third part contains a summary, conclusions and ideas for further work.
 
 \end{abstract}
 \clearpage
@@ -224,13 +223,13 @@ The third part contains a summary, conclusions and ideas for further work.
 easily adapted to various needs, and allow operations which would be almost
 impossible or very expensive in analog hardware. A \gls{sdr} consists of specialised
 software, a general purpose computer, an analog frontend with fast
-\gls{adc}/\gls{dac}, and optional \gls{dsp} and mixing capabilities.
+\glspl{adc}/\glspl{dac}, an optional \gls{dsp}, and mixing capabilities.
 
 One of those frontends is 
 the Ettus Research \gls{usrp} N2x0 product family. This family consists of the N200 and
 the N210, of which the latter has a superior \gls{fpga}, allowing additional custom \gls{dsp} code directly
-in the device. Both contain \SI{100}{\mega\samples\per\second} dual \gls{adc},
-\SI{400}{\mega\samples\per\second} dual \gls{dac}, Xilinx Spartan
+in the device. Both contain \SI{100}{\mega\samples\per\second} dual \glspl{adc},
+\SI{400}{\mega\samples\per\second} dual \glspl{dac}, a Xilinx Spartan
 3A-DSP \gls{fpga}, and Gigabit Ethernet connectivity to stream data. The analog part is
 provided by an interchangable family of daughter boards, which allow operation from
 \gls{dc} to \SI{6}{\giga\hertz}\cite{ettus_n2x0}. These products are also available as rebranded
@@ -336,7 +335,8 @@ of this device can be seen in \cref{fig:usrp}. This overview was drawn according
 available schematics of the SBX\cite{sch_sbx}, the N210\cite{sch_n2xx} and Galler's master's thesis\cite{flo}.
 
 As can be seen in \cref{fig:usrp} the overall layout consists of an independent \gls{rx} and
-\gls{tx} path. SW3 and SW2 can be used to support half duplex operation over a single connection.
+\gls{tx} path. SW3 and SW2 can be used to support half duplex operation over a single connection
+via the TX/RX port.
 
 Both paths feature independent \glspl{lo} which consist of a \gls{pll} (SYNTH1/2) and a low
 pass filter (LP1/6), which can be activated with SW1 to suppress harmonics\cite{flo}. The
@@ -347,23 +347,23 @@ by the N210 according to the following formula provided by \cite{synth}:
 f_{out} = \underbrace{\SI{100}{\mega\hertz} \cdot \frac{1 + D}{R \cdot (1 + T)}}_\text{input stage} \cdot \overbrace{\left(INT + \frac{FRAC}{MOD}\right)}^\text{RF N divider} \cdot \underbrace{\frac{1}{out}}_\text{output stage}
 \end{equation}
 This reference is either generated by the N210, or can be provided externally.
-$f_{out}$ is phase aligned with the reference clock. $D$ represents the frequency doubler
+$f_{out}$ is phase aligned with the reference clock of the synthesizer. $D$ represents the frequency doubler
 and $T$ the divide-by-two block at the reference input. Both can
 be either one or zero. $R$ is the preset divide ratio and can be set to values from 1 to 1023.
 Those three variables control the input stage and allow dividing the input frequency before multiplying
 it. The multiplication can be changed using $INT$ ($23$ to $65535$), $MOD$ ($2$ to $4095$)
-and $FRAC$ (0 to $MOD - 1$). The resulting frequency can be further divided with the $out$ (1, 2, 4, 8 or 16).
-All those variables can only be integers and therefor it is not always possible to set the \gls{lo}
-frequency to the desired value. It is possible to compensate this error with the digital signal
+and $FRAC$ (0 to $MOD - 1$). The resulting frequency can be further divided with $out$ (1, 2, 4, 8 or 16).
+All those variables can only be integers and therefore it is not always possible to set the \gls{lo}
+frequency to the desired value. It is possible to compensate this error to some extent with the digital signal
 processing chains described in \cref{sec:dsprx,sec:dsptx}.
 
-The \gls{rx} signal path is a superheterodyne design with two \glspl{lna} (LNA1/3 and LNA2),
-a programmable attenuator (ATT1), a quadrature demodulator (DEMOD), lowpass filters (LP2, LP3)
+The \gls{rx} signal path is a direct conversion design with two \glspl{lna} (LNA1/3 and LNA2),
+a programmable attenuator (ATT1), a quadrature demodulator (DEMOD), aliasing filters (LP2, LP3)
 and \gls{adc} drivers (AMP1). ATT1 can be configured to attenuate the received signal by
 \SI{0}{\deci\bel} to \SI{31.5}{\deci\bel} in \SI{0.5}{\deci\bel} steps. In combination with
 the amplifiers this results in an adjustable gain range of \SI{0}{\deci\bel} to \SI{31.5}{\deci\bel}.
 
-The \gls{tx} signal path also follows a superheterodyne design consisting of a quadrature
+The \gls{tx} signal path also follows a direct conversion design consisting of a quadrature
 modulator (MOD), amplifiers (AMP2, AMP3), the same variable attenuator as has been used in
 the \gls{rx} path (ATT2), and a lowpass filter, to prevent harmonics (LP4). LP5 is as an
 anti aliasing filter, which is needed because of the analog-to-digital conversion.
@@ -374,12 +374,12 @@ but the \gls{ni} version uses \SI{20}{\mega\hertz} filters\cite{ni_29xx}.
 Digital-to-analog and analog-to-digital conversion is handled by the N210 board at a fixed sampling rate of
 \SI{100}{\mega\samples\per\second}. Samples can be transferred to and from the device via the
 \si{\giga\bit} network interface. This limits the maximum sampling rate for \SI{16}{\bit} to
-\SI{25}{\mega\samples\per\second} and \SI{50}{\mega\samples\per\second} for \SI{8}{\bit}.
+\SI{25}{\mega\samples\per\second} and to \SI{50}{\mega\samples\per\second} for \SI{8}{\bit}.
 
 In order to keep the platform flexible, the \gls{fpga} design contains no knowledge
 about the specific design and both boards also contain small \glspl{eeprom}. These contain
 information about the board, such as type and revision. The host driver uses this information,
-to use the right \gls{gpio}, formulas (e.g. \cref{eq:frequency}), and limits for controlling
+to use the right \glspl{gpio}, formulas (e.g. \cref{eq:frequency}), and limits for controlling
 the different board components. Besides using the reference settings, this modular aproach
 and the layered model of the driver enables control of every single chip on the boards directly.
 
@@ -393,12 +393,12 @@ Digital down conversion for \gls{rx} and digital up conversion for \gls{tx} are 
 by two dedicated \gls{dsp} chains.
 \Cref{sec:dsprx} and \cref{sec:dsptx} explain both in more detail. Those details have been derived
 from the \gls{fpga} sources at \cite{usrp_src}.
-In order to minimize noise, both chains use round to nearest with error diffusion and clipping
-for converting signals to lower bit widths. The samples generated by the dsp chain have a final
+In order to minimize noise, both chains use round to nearest with error diffusion, clipping and saturation
+for converting signals to lower bit widths. The samples generated by the \gls{dsp} chain have a final
 bit width of \SI{16}{\bit} per channel. If the \SI{8}{\bit} line format is used, then the
 lower \SI{8}{\bit} are truncated from the sample.
 
-Samples are exchanged with the host computer via ethernet. Since ethernet is non deterministic
+Samples are exchanged with the host computer via ethernet. Since ethernet is non deterministic, and to prevent underruns due to processing delays, 
 both \gls{rx} and \gls{tx} use a \gls{fifo} buffer with overrun and underrun detection. These
 error conditions are reported to the host and the driver writes \texttt{U} for every underrun
 and \texttt{O} for every overrun to standard ouput. These \glspl{fifo} also handle the
@@ -595,6 +595,93 @@ if the \gls{lo} is not able to tune exactly to the desired center frequency (see
 Another use case is shifting undesired frequencies out of the band of
 interest by applying an offset to the \gls{lo} frequency and correcting
 it using the \gls{cordic} stage.
+
+\begin{figure}[htb]
+    \begin{subfigure}[c]{.49\linewidth}
+        \centering
+\resizebox{\linewidth}{!}{
+        \begin{tikzpicture}
+            \draw node[dspnodeopen] (in) {};
+            \draw node[dspadder,right=of in] (isaA1) {};
+            \draw node[dspsquare,above=of isaA1,label=above:Stage 1] (isdA1) {$z^{-1}$};
+            \draw node[right=of isaA1] (contA1) {$\dotsc$};
+            \draw node[above=of contA1] {$\dotsc$};
+            \draw node[dspadder,right=of contA1] (isaA2) {};
+            \draw node[dspsquare,above=of isaA2,label=above:Stage $N$] (isdA2) {$z^{-1}$};
+            \draw node[dspsquare,right=of isaA2] (sw) {$\downsamplertext{R}$};
+            \draw node[dspadder,right=of sw] (isaB1) {};
+            \draw node[dspsquare,above=of isaB1,label=above:Stage 1] (isdB1) {$z^{-2}$};
+            \draw node[right=of isaB1] (contB1) {$\dotsc$};
+            \draw node[above=of contB1] {$\dotsc$};
+            \draw node[dspadder,right=of contB1] (isaB2) {};
+            \draw node[dspsquare,above=of isaB2,label=above:Stage $N$] (isdB2) {$z^{-2}$};
+            \draw node[dspnodeopen,right=of isaB2] (out) {};
+
+            \foreach \i in {A,B} {
+                \foreach \j in {1,2} {
+                    \draw[dspconn] (isd\i\j) -- (isa\i\j);
+                }
+            }
+
+            \draw[dspconn] ($(isaA1)!0.5!(contA1)$) node[dspnodefull] {} |- (isdA1);
+            \draw[dspconn] ($(isaA2)!0.5!(sw)$) node[dspnodefull] {} |- (isdA2);
+            \draw[dspconn] ($(isaB1)!0.5!(sw)$) node[dspnodefull] {} |- (isdB1);
+            \draw[dspconn] ($(isaB2)!0.5!(contB1)$) node[dspnodefull] {} |- (isdB2);
+
+
+            \draw[dspconn] (in) -- (isaA1);
+            \draw[dspline] (isaA1) -- (contA1);
+            \draw[dspconn] (contA1) -- (isaA2);
+            \draw[dspconn] (isaA2) -- (sw);
+            \draw[dspconn] (sw) -- (isaB1);
+            \draw[dspline] (isaB1) -- (contB1);
+            \draw[dspconn] (contB1) -- (isaB2);
+            \draw[dspconn] (isaB2) -- (out);
+        \end{tikzpicture}
+    }
+        \caption{Decimating circuit}
+        \label{fig:cicdecim}
+    \end{subfigure}
+    \begin{subfigure}[c]{.5\linewidth}
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                    ylabel={gain},
+                    xlabel={$f/\frac{f_s}{R}$},
+                    y unit={\deci\bel},
+                    ymin=-150,
+                    xmin=0,
+                    xmax=2,
+                    width=\linewidth,
+                    style={font=\tiny}
+                ]
+                \pgfplotsextra{\clip (axis cs:-1,-150) rectangle (axis cs:3,10);}
+                \addplot[black,domain=0:2,samples=501,name path=A] {10*log10((sin(deg(pi*2*x))/sin(deg(pi*x/4)))^8) - 72.24};
+                \path[name path=B] (\pgfkeysvalueof{/pgfplots/xmin},-150) -- (\pgfkeysvalueof{/pgfplots/xmax},-150);
+                
+                \addplot[gray!30] fill between[of=A and B,soft clip={domain=0:0.125},];
+                \addplot[gray!30] fill between[of=A and B,soft clip={domain=0.875:1},];
+                \addplot[gray!30] fill between[of=A and B,soft clip={domain=1:1.125},];
+                \addplot[gray!30] fill between[of=A and B,soft clip={domain=1.875:2},];
+
+                \draw[dashed] (0.125,-150) -- (0.125,\pgfkeysvalueof{/pgfplots/ymax});
+                \draw (0.125,0) node[anchor=base west] {\scriptsize $f_c$};
+                \draw[dashed] (0.875,-150) -- (0.875,\pgfkeysvalueof{/pgfplots/ymax});
+                \draw (1,0) node[anchor=base] {\scriptsize $2\cdot{}f_c$};
+                \draw[dashed] (1.125,-150) -- (1.125,\pgfkeysvalueof{/pgfplots/ymax});
+                \draw[dashed] (1.875,-150) -- (1.875,\pgfkeysvalueof{/pgfplots/ymax});
+
+                \draw (0.0625,-50) node[anchor=center,rotate=90] {\scriptsize passband};
+                \draw (1,-50) node[anchor=center,rotate=90] {\scriptsize alias band};
+
+            \end{axis}
+        \end{tikzpicture}
+        \caption{Frequency response}
+        \label{fig:cicresponse}
+    \end{subfigure}
+    \caption{\gls{cic}}
+\end{figure}
+
 
 Downsampling is implemented using an interpolating \gls{cic} followed by two
 interpolating half band filters. The \gls{cic} is a \gls{fir} filter, where every tap has
@@ -1163,7 +1250,7 @@ As mentioned in \cref{sec:usrp} the design of the \gls{rx} path is missing \gls{
 coupling. This results in a noticeable \gls{dc} offset in the measured samples.
 \gls{dc} offset compensation can completely remove this offset, but this would
 also remove any \gls{if} components at \SI{0}{\hertz}. Because of this, the
-\gls{rf} frequency response was measured at an \gls{if} frequency of
+\gls{rf} response was measured at an \gls{if} frequency of
 \SI{1}{\mega\hertz}.
 
 The measurements were taken with a gain settings from \SI{0}{\deci\bel} to
@@ -1255,11 +1342,11 @@ active at lower frequencies. This results in a lower \gls{lo} power at the DEMOD
         \draw (dut.east) node[anchor=south west] {\tiny TX};
         \draw[-open triangle 45] (att) -- (dst);
     \end{tikzpicture}
-    \caption{\gls{tx} \gls{rf} frequency response measurement setup}
+    \caption{\gls{tx} \gls{rf} response measurement setup}
     \label{fig:txrfsetup}
 \end{figure}
 
-The setup to for the \gls{tx} \gls{rf} frequency response, as can be seen in 
+The setup to for the \gls{tx} \gls{rf} response, as can be seen in 
 \cref{fig:txrfsetup} uses a \SI{16}{\deci\bel} attenuator, to limit the output
 signal from the \gls{usrp} to an acceptable range of the power sensor (\SI{-60}{\deci\belm}
 to \SI{20}{\deci\belm}).
@@ -1505,11 +1592,11 @@ fully compensated.
         \draw (dut.east) node[anchor=south west] {\tiny TX};
         \draw[-open triangle 45] (att) -- (dst);
     \end{tikzpicture}
-    \caption{\gls{tx} \gls{if} frequency response measurement setup}
+    \caption{\gls{tx} \gls{if} response measurement setup}
     \label{fig:txifsetup}
 \end{figure}
 
-The setup for measuring the \gls{tx} \gls{if} frequency response can be seen in
+The setup for measuring the \gls{tx} \gls{if} response can be seen in
 \cref{fig:txifsetup}. For power measurements a spectrum analyzer has been used
 instead of a power sensor, to measure only the targeted \gls{if} frequency. This
 is needed, because significant aliasing peaks can be observed while measuring
@@ -1576,7 +1663,7 @@ distributed along the \gls{if} frequency axis.
 \end{figure}
 
 \Cref{fig:iftx} features only the \SI{16}{\bit} measurement, because the \SI{8}{\bit}
-measurement produced the same result. Like in \cref{sec:ifrx} the cut off frequency
+measurement produced the same result. Like in \cref{sec:iftx} the cut off frequency
 of the aliasing filter is visible. \gls{cic} roll off is noticeable in
 \SI{25}{\mega\samples\per\second}, which means, that the half band filters don't fully
 compensate the \gls{cic} (see \cref{sec:dsptx}).
