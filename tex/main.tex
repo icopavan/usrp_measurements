@@ -1758,15 +1758,16 @@ mentioned in \cref{sec:usrp} is also observable.
 \end{figure}
 
 At first the same measurement setup as in \cref{fig:rxifsetup} was attempted,
-but it was not possible to generate a signal free of intermodulation products with
-the used vector generator (see \cref{sec:meters}).
+but it was not possible to generate a signal almost free of intermodulation products with
+the used vector generator (see \cref{sec:meters}) as needed for high dynamic intermodulation
+measurements.
 
 This led to the setup in \cref{fig:rxipsetup}. This setup utilized a resistive power
 splitter/combiner, to combine the signals from the two generators. To prevent the signal
-generators from interfering with each other, an additional \gls{dc} blocker and a
+generators from interfering with each other, an additional \gls{dc} block and a
 \SI{10}{\deci\bel} attenuator were used. Without these precautions, the generators
-might detect the output of the other one and therefor lower the output power, to keep
-the signal at the requested level. This is the case, because resistive power splitters
+might detect the output of the other one and therefor lower the output power, because
+of internal power leveling. This is the case, because resistive power splitters
 have very poor isolation of around \SI{6}{\deci\bel}.
 
 The \gls{usrp} was set to a center frequency of \SI{1}{\giga\hertz}, one generator
@@ -1777,8 +1778,8 @@ intermodulation products at $\SI{1}{\giga\hertz} + \SI{1.5}{\mega\hertz}$ and
 $\SI{1}{\giga\hertz} - \SI{1.5}{\mega\hertz}$. The power of the spectral components was
 measured with the Matlab function \lstinline[language=matlab]{bandpower} with a window
 size of \SI{100}{\kilo\hertz}. All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
-and with \SI{16}{\bit} per sample. Measured samples were corrected by a second measurement with a power meter in place of the
-\gls{usrp}, to get the power levels as if they were directly applied at the input port.
+and \SI{16}{\bit} per sample. Measured samples were corrected by a second measurement with a power meter in place of the
+\gls{usrp}, to get the power levels as if they were directly applied to the input port.
 
 \begin{figure}[htb]
     \centering
@@ -1808,8 +1809,7 @@ and with \SI{16}{\bit} per sample. Measured samples were corrected by a second m
 Stepping the gain of ATT1 (see \cref{fig:usrp}) did not result in noticeable
 intermodulation products. Because of this, the measurement was taken at a fixed
 gain setting of \SI{31.5}{\deci\bel}, while stepping the signal power. This also means,
-that the intermodulation products shown in \cref{fig:rxip3} are
-caused by Part B in \cref{fig:usrp}.
+that the intermodulation products shown in \cref{fig:rxip3} are caused by Part B in \cref{fig:usrp}.
 
 The points in \cref{fig:rxip3} show the measured samples. $IM_3$-samples
 below the input power of \SI{-43}{\deci\belm} were not increasing with the input
@@ -1820,9 +1820,9 @@ the \gls{adc} can measure. This causes severe distortion and this value had to b
 discarded.
 
 Both $IM_3$ and $out$ were fitted to curves according to the formula $3\cdot{}x+a$ resp.
-$1\cdot{}x+a$. The point were both meet is the third order intercept point. The calculated
-values are: third order input intercept point $IIP_3 = \SI{-7.6}{\deci\belm}$ and
-third order output intercept point $OIP_3 = \SI{25.5}{\deci\belfs}$.
+$1\cdot{}x+a$. The point were both curves intersect is called the third order intercept point.
+The calculated value for the third order input intercept point is $IIP_3 = \SI{-7.6}{\deci\belm}$
+($OIP_3 = \SI{25.5}{\deci\belfs}$).
 
 \subsubsection{TX}
 \label{sec:iptx}
@@ -1850,13 +1850,14 @@ Measurements were taken with the setup in \cref{fig:txipsetup}. The \SI{16}{\dec
 attenuator was needed, to be able to do calibration measurements. Those were taken with
 a power meter, which had a more limited range, in place of the spectrum analyzer.
 
-The \gls{usrp} was set to a center frequency of \SI{2}{\giga\hertz}. Samples for a dual
+The \gls{usrp} was set exemplary to a center frequency of \SI{2}{\giga\hertz}. Samples for a dual
 tone signal with \gls{if} frequencies of \SI{+0.5}{\mega\hertz} and \SI{-0.5}{\mega\hertz}
 were sent to the \gls{usrp}. This resulted in third order intermodulation products at
-\SI{+1.5}{\mega\hertz} and \SI{-1.5}{\mega\hertz}, which were measured with a spectrum analyzer.
+\SI{+1.5}{\mega\hertz} and \SI{-1.5}{\mega\hertz} offset to the center frequency, which
+were measured using a spectrum analyzer.
 
 Since it is not possible to use two generators without modifying the \gls{usrp}, multiple
-measurements with random phases were taken. Those measurements were average, to get results,
+measurements with random phases were taken. Those measurements were averaged, to get results,
 that are independent of the phase. All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
 and with \SI{16}{\bit} per sample. Measured samples were corrected by the insertion loss of the cable with the
 attenuator attached, which was measured with a network analyzer.
@@ -1897,8 +1898,8 @@ below \SI{-15}{\deci\belfs} \gls{adc} power were discarded, because they were
 below the noise floor.
 
 The third order intercept point was calculated in the same way as in \cref{sec:iprx}
-described. The resulting values are: $IIP_3 = \SI{14.7}{\deci\belfs}$ and
-$OIP_3 = \SI{40.5}{\deci\belm}$.
+described. The resulting third order output intercept point is $OIP_3 = \SI{40.5}{\deci\belm}$
+($IIP_3 = \SI{14.7}{\deci\belfs}$).
 
 %======================================================================
 \clearpage
