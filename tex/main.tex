@@ -206,12 +206,14 @@ The software defined radio platform characterized in this bachelor thesis is the
 Research \gls{usrp}. The characterization consists of a \gls{rf} response,
 a \gls{if} response and the intermodulation properties. The small signal
 behaviour and compression effects are described with the frequency responses. Nonlinearities
-are characterized by the intermodulation properties. These results
-are needed, to be able to create applications with this platform.
+are characterized by the intermodulation properties. With these results the characteristics
+of the hardware can be taken into account during the design process of radio transceivers.
+This is especially important for high performance radio systems, which can be affected by
+nonlinearities and deviations from the specifications.
 
 This work starts with a full description of the inner workings of the analog and
 the digital part of the platform, which was elaborated from the freely available
-source codes. After this GNU Radio and matlab scripts, to automate the measurements, were
+source codes. After this GNU Radio and Matlab scripts, to automate the measurements, were
 developed. GNU Radio usage is described in this work based on these scripts. The
 processed results, measurement setups, and discussions can be found in
 the second section of this work. The third part contains a summary, conclusions and ideas for further work.
@@ -937,8 +939,9 @@ of signal processing modules, which are written in C++, a flowgraph oriented fra
 used in C++ and python, and the accompanying program ``GNU Radio Companion''\cite{gnuradio_grc},
 which provides a graphical user interface for easier flowgraph creation. Since GNU Radio comes
 with a wide variety of signal processing modules and an easy to use graphical user interface,
-even analog, old, complicated radio systems can be rebuilt without any programming knowledge
-and limited signal processing knowledge\cite{isee3}.
+basic radio systems can be implemented with very limited programming knowledge. A full example,
+that demonstrates this, is provided by the ``ISEE-3 Reboot Project'' at \cite{isee3}. This project
+rebuilt the deep space communication system using GNU Radio and an Ettus Research \gls{usrp} N200.
 
 Since GNU Radio and the \gls{usrp} drivers (called \gls{uhd}) are integrated into every
 major linux distribution, setup is as easy as installing the packages. There are
@@ -948,10 +951,10 @@ is to profile \gls{volk} with the command \verb+volk_profile+, which selects the
 fastest way to do vector operations for this particular host\cite{gnuradio_volk}.
 
 \subsubsection{Flowgraphs}
-Flowgraphs enable the use of GNU Radio, without any programming knowledge, or
-for easier prototyping. These flowgraphs are created with GNU Radio Companion, which
-provides an easy way to create digital signal processing chains. The whole process
-is described in the following based on the \gls{rx} measurement module, which was
+GNU Radio applications can be implemented graphically with flowgraphs. This functionality is
+provided by GNU Radio Companion, which is a part of GNU Radio. This work flow provides an
+easy way to create digital signal processing chains, without having to learn a programming language
+first. The whole process is described in the following based on the \gls{rx} measurement module, which was
 created for the measurements in \cref{sec:measurements}. This flowgraph can be seen in
 \cref{fig:grc_rx}. The flowgraph for \gls{tx} measurements is provided in \cref{sec:sources}.
 
@@ -1127,18 +1130,18 @@ to the script in \cref{lst:rxfinal.py} except for the startup
 (see \cref{lst:txfinal.py}). After starting the flowgraph, in case of continuous
 streaming mode, the script waits with \lstinline{raw_input()}
 for a new line on standard input. After this happens the processing is stopped
-with \lstinline{tb.stop()}. Note that \lstinline{tb.wait()} needs to be called
+using \lstinline{tb.stop()}. Note that \lstinline{tb.wait()} needs to be called
 in this case too, because this waits for a clean shut down.
 
 \subsection{Using the \glsentryshort{usrp} from Mathworks Matlab}
 
 Drivers that enable using the \gls{usrp} from within Matlab and Simulink are
-provided by Mathworks \cite{matlab_usrp}. These drivers need the Communications
+provided by Mathworks \cite{matlab_usrp}. These drivers need Matlab's Communications
 System Toolbox. The drivers only support basic functionality, like setting the center frequency
 or the decimation rate. It is not possible to set the clock source of the
 \gls{usrp} to external, which is needed for typical \gls{rf} measurements to
 synchronize the instruments. Another problem which occured during validation of the drivers was, that Matlab
-was too slow for real time data processing at a sample rate of
+was too slow for real time data processing at a sample rate of up to
 \SI{50}{\mega\samples\per\second}.
 
 \begin{figure}[htb]
@@ -1206,7 +1209,7 @@ samples as a vector of complex numbers.
 
 Functions for transmitting samples were also developed and can be found in
 \cref{sec:sources}. These functions are similar to the \gls{rx} version. The
-only added feature is a flag which enables asynchronously sending samples. This
+only added feature is a flag which enables asynchronously transmitting samples. This
 enables doing measurements from Matlab, while transmitting.
 
 \clearpage
