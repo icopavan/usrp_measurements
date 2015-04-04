@@ -26,7 +26,7 @@ pagebackref,
 bookmarksopen=false
 ]{hyperref}
 
-\usepackage[binary-units]{siunitx}
+\usepackage[binary-units,retain-explicit-plus]{siunitx}
 \usepackage{pgfplots}
 
 \pgfplotsset{compat=1.11}
@@ -1468,19 +1468,21 @@ in \cref{fig:usrp}.
 
 The measurement setup depicted in \cref{fig:rxifsetup} consists of a signal source, directly
 connected to the \gls{usrp}. In order to ignore peaks, caused by aliasing and IQ imbalance,
-the signal power of the frequencies of interest were calculated with the matlab function
+the signal power of the frequencies of interest were calculated with the Matlab function
 \lstinline[language=matlab]{bandpower}. This function calculates the power contained in
 a signal within a specific window in the spectrum. A \SI{100}{\kilo\hertz} window was
 used for this measurements.
 
-\gls{if} frequencies used for in \SI{50}{\mega\samples\per\second} were \SI{-24}{\mega\hertz}
-to \SI{24}{\mega\hertz} in \SI{1}{\mega\hertz} steps, and \SI{-12}{\mega\hertz}
-to \SI{12}{\mega\hertz} in \SI{0.5}{\mega\hertz} steps for \SI{25}{\mega\samples\per\second}.
-Every \gls{if} measurement was repeated for every center frequency from \SI{400}{\mega\hertz}
-to \SI{4.4}{\giga\hertz} in \SI{100}{\mega\hertz} steps. Those measurements were taken
-at \SI{0}{\deci\belm}, \SI{15}{\deci\belm} and \SI{31.5}{\deci\belm}. The signal source was
-set to $\SI{-10}{\deci\belm}-gain$ output power. For calibration, a power meter was used in place of the \gls{usrp} and the measurement
-data corrected as if the $\SI{-10}{\deci\belm}-gain$ were present at the input port.
+Measurements were taken at \SI{50}{\mega\samples\per\second} and \SI{25}{\mega\samples\per\second}.
+\gls{if} frequencies used for \SI{50}{\mega\samples\per\second} were \SI{-24}{\mega\hertz}
+to \SI{+24}{\mega\hertz} in \SI{1}{\mega\hertz} steps, and \SI{-12}{\mega\hertz}
+to \SI{+12}{\mega\hertz} in \SI{0.5}{\mega\hertz} steps for \SI{25}{\mega\samples\per\second}.
+Every \gls{if} frequency response measurement was taken at center frequencies from \SI{400}{\mega\hertz}
+to \SI{4.4}{\giga\hertz} in \SI{100}{\mega\hertz} steps. Those measurements were repeated
+at gain settings of \SI{0}{\deci\bel}, \SI{15}{\deci\bel} and \SI{31.5}{\deci\bel}. The signal source was
+initially set to \SI{-10}{\deci\belm} for the gain setting of \SI{0}{\deci\bel} and adjusted with the
+gain setting for the other measurements, to keep the power constant at Part B in \cref{fig:usrp}.
+
 
 \begin{figure}[htb]
     \centering
@@ -1509,10 +1511,13 @@ data corrected as if the $\SI{-10}{\deci\belm}-gain$ were present at the input p
     \label{fig:rfifrx16}
 \end{figure}
 
+For calibration, a power meter was used in place of the \gls{usrp} and the measurement
+data corrected as if the chosen power setting was present at the input port.
+
 An overview of the measurement results can be seen in \cref{fig:rfifrx16}. The slope and ripple
-in the \gls{rf} frequency direction is uniformly distributed along the \gls{if} frequency axis.
+in the \gls{rf} frequency axis is uniformly distributed along the \gls{if} frequency axis.
 These results and different gain settings, which can be found in the \cref{sec:sources},
-reproduce the same result as in \cref{sec:rfrx}.
+reproduce the same result as has been observed in the \gls{rf} frequency response (see \cref{sec:rfrx}).
 
 Since these measurements were taken without \gls{dc} offset compensation, there is a small peak at 
 \SI{0}{\mega\hertz} \gls{if}, which is caused by DEMOD (see \cref{sec:dsprx}).
@@ -1531,6 +1536,8 @@ Since these measurements were taken without \gls{dc} offset compensation, there 
         width=\linewidth,
         height=5cm,
         minor tick num = 1,
+        xmin=-25e6,
+        xmax=25e6
         ]
         \addplot[red] table {data/if/rx/16_2000_15.0};
         \addlegendentry{\SI{16}{\bit}}
@@ -1564,6 +1571,8 @@ while the cut off at the edges of the usable spectrum is caused by the alias fil
         width=\linewidth,
         height=5cm,
         minor tick num = 1,
+        xmin=-25e6,
+        xmax=25e6
         ]
         \addplot[red] table {data/if/rx/8_2000_15.0};
     \end{axis}
@@ -1580,10 +1589,9 @@ at \SI{50}{\mega\samples\per\second} (see \cref{sec:usrp}).
 In \cref{fig:ifrx50} the cut off frequency of \SI{20}{\mega\hertz}, of the LP3
 filter, mentioned in \cref{sec:usrp}, is observable. The \gls{cic} roll off can also be seen, because
 in \SI{50}{\mega\samples\per\second} mode only one of the half band filters is
-active (see \cref{sec:dsprx}). Because of this the \gls{cic} filter is not
+active (see \cref{sec:dsprx}). Because of this, it can be seen that the \gls{cic} filter is not
 fully compensated.
 
-\clearpage
 \subsubsection{TX}
 \label{sec:iftx}
 \begin{figure}[htb]
@@ -1611,12 +1619,6 @@ The setup for measuring the \gls{tx} \gls{if} response can be seen in
 instead of a power sensor, to measure only the targeted \gls{if} frequency. This
 is needed, because significant aliasing peaks can be observed while measuring
 frequencies at the edge of the usable frequency band.
-
-Calibrating the spectrum analyzer was done using a power meter instead of the
-spectrum analyzer and measuring a single \gls{if} frequency at
-\SI{1}{\mega\hertz} for every center frequency. The samples were corrected
-by the power difference between those two measurements and by the forward
-transfer function of the cable, measured with a network analyzer.
 
 \begin{figure}[htb]
     \centering
@@ -1646,9 +1648,15 @@ transfer function of the cable, measured with a network analyzer.
     \label{fig:rfiftx16}
 \end{figure}
 
-The overview in \cref{fig:rfiftx16} has the same slope and ripple
-in the \gls{rf} frequency direction as \cref{sec:rftx}. Both are uniformly
-distributed along the \gls{if} frequency axis.
+Calibrating the spectrum analyzer was done using a power meter instead of the
+spectrum analyzer and measuring a single \gls{if} frequency at
+\SI{1}{\mega\hertz} for every center frequency. The samples were corrected
+by the power difference between those two measurements and by the forward
+transfer function of the cable, measured with a network analyzer.
+
+The overview in \cref{fig:rfiftx16} reproduces the same slope and ripple
+along the \gls{rf} frequency axis as can be seen in the \gls{rf} frequency response
+(see \cref{sec:rftx}). Both are uniformly distributed along the \gls{if} frequency axis.
 
 \begin{figure}[htb]
     \centering
@@ -1664,6 +1672,8 @@ distributed along the \gls{if} frequency axis.
         height=5cm,
         minor tick num = 1,
         restrict x to domain=-12e6:12e6,
+        xmin=-25e6,
+        xmax=25e6
         ]
         \addplot[red] table {data/if/tx/16_2000_15.0};
     \end{axis}
@@ -1692,6 +1702,8 @@ compensate the \gls{cic} (see \cref{sec:dsptx}).
         height=5cm,
         minor tick num = 1,
         restrict x to domain=-24e6:24e6,
+        xmin=-25e6,
+        xmax=25e6
         ]
         \addplot[red] table {data/if/tx/8_2000_15.0};
     \end{axis}
@@ -1763,7 +1775,7 @@ to $\SI{1}{\giga\hertz} + \SI{0.5}{\mega\hertz}$ and the other one to $\SI{1}{\g
 phase, the generators were not synchronized. These frequency settings result in third order
 intermodulation products at $\SI{1}{\giga\hertz} + \SI{1.5}{\mega\hertz}$ and
 $\SI{1}{\giga\hertz} - \SI{1.5}{\mega\hertz}$. The power of the spectral components was
-measured with the matlab function \lstinline[language=matlab]{bandpower} with a window
+measured with the Matlab function \lstinline[language=matlab]{bandpower} with a window
 size of \SI{100}{\kilo\hertz}. All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
 and with \SI{16}{\bit} per sample. Measured samples were corrected by a second measurement with a power meter in place of the
 \gls{usrp}, to get the power levels as if they were directly applied at the input port.
@@ -1846,7 +1858,7 @@ were sent to the \gls{usrp}. This resulted in third order intermodulation produc
 Since it is not possible to use two generators without modifying the \gls{usrp}, multiple
 measurements with random phases were taken. Those measurements were average, to get results,
 that are independent of the phase. All the measurements were taken with a sample rate of \SI{25}{\mega\samples\per\second}
-and with \SI{16}{\bit} per sample. Measured samples were corrected by the forward transfer function of the cable with the
+and with \SI{16}{\bit} per sample. Measured samples were corrected by the insertion loss of the cable with the
 attenuator attached, which was measured with a network analyzer.
 
 Since changing the gain setting of ATT2 (see \cref{fig:usrp}) did not result in
