@@ -22,7 +22,6 @@ pdfauthor={Gernot Vormayr},
 pdfsubject={Bachelor thesis},
 pdfkeywords={Hochfrequenz,Software Defined Radio,SDR,GNU Radio,USRP},
 pdfpagelabels,
-bookmarksopen=false
 ]{hyperref}
 
 \usepackage[binary-units,retain-explicit-plus]{siunitx}
@@ -149,6 +148,11 @@ captionpos=b,escapeinside={(*}{*)}}
 \newacronym{if}{IF}{intermediate frequency}
 \newacronym{ram}{RAM}{random access memory}
 \makeglossaries
+
+\newcommand*\rot{\rotatebox{90}}
+\newcommand*\X{$\times$}
+
+\usepackage{booktabs}
 
 \begin{document}
 \begin{titlepage}
@@ -1970,7 +1974,23 @@ signals for RX measurements and as clock reference. Since the SMIQ06B possesses 
 Ethernet connectivity, an Agilent E85810 GPIB Etheret bridge provided the necessary
 conversion. Power measurements have been carried out with an Agilent N1914A Power Meter and an
 Agilent E9301A averaging Power Sensor. A Rhode \& Schwarz ZVL was used to carry out
-spectrum measurements and measure cable losses.
+spectrum measurements and measure cable losses. \Cref{tab:meters} lists which instrument
+was used for which measurement.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{lcccccc}
+        & \rot{\gls{rf} \gls{rx}} & \rot{\gls{rf} \gls{tx}} & \rot{\gls{if} \gls{rx}} & \rot{\gls{if} \gls{tx}} & \rot{IM \gls{rx}} & \rot{IM \gls{tx}} \\
+        \midrule
+        SMBV & \X &   &   &   & \X &   \\
+        SMIQ &    &   & \X &   & \X &   \\
+        Power Meter & \X & \X & \X & \X & \X & \X \\
+        ZVL &    & \X &   & \X & \X & \X \\
+        \bottomrule
+    \end{tabular}
+    \caption{Used Instruments}
+    \label{tab:meters}
+\end{table}
 
 \printglossary[type=\acronymtype]
 
