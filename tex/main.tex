@@ -1806,10 +1806,12 @@ and \SI{16}{\bit} per sample. Measured samples were corrected by a second measur
     \label{fig:rxip3}
 \end{figure}
 
-Stepping the gain of ATT1 (see \cref{fig:usrp}) did not result in noticeable
-intermodulation products. Because of this, the measurement was taken at a fixed
-gain setting of \SI{31.5}{\deci\bel}, while stepping the signal power. This also means,
-that the intermodulation products shown in \cref{fig:rxip3} are caused by Part B in \cref{fig:usrp}.
+Stepping the attenuation of ATT1 (see \cref{fig:usrp}) did not result in noticeable
+third order intermodulation products. Decreasing the attenuation by \SI{1}{\deci\bel} increased
+these products by \SI{1}{\deci\bel}. This means, that the intermodulation products shown
+in \cref{fig:rxip3} are caused by Part B in \cref{fig:usrp}. Because of this, the
+measurement was taken at a fixed gain setting of \SI{31.5}{\deci\bel} (ATT1 attenuation
+setting of \SI{0}{\deci\bel}), while stepping the signal power.
 
 The points in \cref{fig:rxip3} show the measured samples. $IM_3$-samples
 below the input power of \SI{-43}{\deci\belm} were not increasing with the input
@@ -1819,8 +1821,9 @@ with a significant higher value then the others, was taken at a higher level, th
 the \gls{adc} can measure. This causes severe distortion and this value had to be
 discarded.
 
-Both $IM_3$ and $out$ were fitted to curves according to the formula $3\cdot{}x+a$ resp.
-$1\cdot{}x+a$. The point were both curves intersect is called the third order intercept point.
+To calculate the third order intercept point, the $out$ samples were fitted with Matlab's
+Curve Fitting Toolbox to a line with a slope of one. The $IM_3$ samples were fitted to
+a line with a slope of three. The point were both curves intersect is called the third order intercept point.
 The calculated value for the third order input intercept point is $IIP_3 = \SI{-7.6}{\deci\belm}$
 ($OIP_3 = \SI{25.5}{\deci\belfs}$).
 
@@ -1846,9 +1849,10 @@ The calculated value for the third order input intercept point is $IIP_3 = \SI{-
     \label{fig:txipsetup}
 \end{figure}
 
-Measurements were taken with the setup in \cref{fig:txipsetup}. The \SI{16}{\deci\bel}
-attenuator was needed, to be able to do calibration measurements. Those were taken with
-a power meter, which had a more limited range, in place of the spectrum analyzer.
+Measurements were taken with the setup in \cref{fig:txipsetup}. To limit the maximum output
+power of the \gls{usrp}, a \SI{16}{\deci\bel} attenuator was used. This was needed to be
+able to use the power sensor mentioned in \cref{sec:meters}. The power meter was used in
+place of the spectrum analyzer for calibration measurements.
 
 The \gls{usrp} was set exemplary to a center frequency of \SI{2}{\giga\hertz}. Samples for a dual
 tone signal with \gls{if} frequencies of \SI{+0.5}{\mega\hertz} and \SI{-0.5}{\mega\hertz}
@@ -1862,10 +1866,12 @@ that are independent of the phase. All the measurements were taken with a sample
 and with \SI{16}{\bit} per sample. Measured samples were corrected by the insertion loss of the cable with the
 attenuator attached, which was measured with a network analyzer.
 
-Since changing the gain setting of ATT2 (see \cref{fig:usrp}) did not result in
-measurable intermodulation products, ATT2 was set to a fixed gain setting of
-\SI{20}{\deci\bel}. This also means, that like in \cref{sec:iprx}, the intermodulation
-products shown are caused by Part B in \cref{fig:usrp}.
+Since changing the attenuation setting of ATT2 (see \cref{fig:usrp}) did not result in
+measurable intermodulation products, the \gls{usrp} was set to a fixed gain setting of
+\SI{20}{\deci\bel}. Like in \cref{sec:iprx}, decreasing the attenuation by 
+\SI{1}{\deci\bel} increased the third order intermodulation products by
+\SI{1}{\deci\bel}. This also means, that the intermodulation products
+shown in \cref{fig:txip3} are caused by Part B in \cref{fig:usrp}.
 
 \begin{figure}[htb]
     \centering
