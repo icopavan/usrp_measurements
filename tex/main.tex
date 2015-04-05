@@ -22,7 +22,6 @@ pdfauthor={Gernot Vormayr},
 pdfsubject={Bachelor thesis},
 pdfkeywords={Hochfrequenz,Software Defined Radio,SDR,GNU Radio,USRP},
 pdfpagelabels,
-pagebackref,
 bookmarksopen=false
 ]{hyperref}
 
@@ -1911,11 +1910,10 @@ described. The resulting third order output intercept point is $OIP_3 = \SI{40.5
 \clearpage
 \section{Conclusions}
 
-The \gls{usrp} device and GNU Radio worked out of the box. No configuration
-was needed and the device just needed to be plugged in. This is in part because
-of the open design, which means, that every schematic and the source code is online
-available. This approach leads to a higher number of contributors, fixing bugs
-and improving the design, which wouldn't be possible with a closed design. Another
+Putting the \gls{usrp} device and GNU Radio into operation required no configuration.
+This is because of the open design, which means, that every schematic and the source code is online
+available. This leads to a higher number of contributors, fixing bugs
+and improving the design, which wouldn't be possible that easy for a closed design. Another
 reason is that the device was specifically designed for GNU Radio. One down side
 of this is, that the whole platform is not a still standing target, which can cause
 the drivers and the hardware to mismatch easily. Because of this always the latest
@@ -1937,22 +1935,26 @@ version uses \SI{20}{\mega\hertz} instead. This was verified in
 \cref{sec:ifrx,sec:iftx} and is mentioned in a figure in \cite{ni_29xx} only.
 
 As can be seen in \cref{sec:rfrx,sec:rftx,sec:ifrx,sec:iftx}, without calibration
-there is a noticeable \gls{iq} imbalance and \gls{dc} offset. Demanding 
-radio applications won't work with an uncalibrated device.
+there is a noticeable \gls{iq} imbalance and \gls{dc} offset. The \gls{iq} imbalance
+is caused by the DEMOD for \gls{rx}, the MOD for \gls{tx}, and the tolerances
+in the I and Q paths in \cref{fig:usrp}. DEMOD and MOD also cause the \gls{dc} offset,
+which is not compensated in the analog hardware. Demanding radio applications
+won't work with an uncalibrated device.
 
 In the \Gls{tx} path, there is a compression at low center frequencies with high
-gain settings (see \cref{fig:outputrf1}). This limits the possible output power
-and an additional amplifier is needed for high power applications.
+gain settings (see \cref{fig:outputrf1}). This limits the possible output power and
+linear operation dynamic range. An additional amplifier would be needed for high
+power applications.
 
 Because of the design of the \gls{ddc} and \gls{duc} chain (see
 \cref{sec:dsprx,sec:dsptx}), there is noticeable \gls{cic} rolloff if only one
 half band filter is active. With odd decimation rates no half band filter is
-active and the \gls{cic} is not compensated. The driver puts out a warning
+active at all and the \gls{cic} is not compensated. The driver puts out a warning
 message, if this is the case. Because of this only decimation/interpolation rates
 divisible by four, or an additional compensating filter should be used. The \gls{tx} shows
 a slight \gls{cic} rolloff despite both half band filters being active (see
 \cref{fig:iftx}). This should be verified in a future work and the filter
-coefficients of the half band filters validated.
+coefficients of the half band filters should be validated or revised.
 
 %======================================================================
 \clearpage
@@ -1961,7 +1963,7 @@ coefficients of the half band filters validated.
 \label{sec:sources}
 All the raw data, processed results and sources can be found at
 \url{https://github.com/notti/usrp_measurements}.
-\section{Used Meters}
+\section{Used Instruments}
 \label{sec:meters}
 A Rhode \& Schwarz SMBV 100A, and a Rhode \& Schwarz SMIQ06B were used to generate
 signals for RX measurements and as clock reference. Since the SMIQ06B possesses no
